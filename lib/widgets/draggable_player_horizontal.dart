@@ -6,10 +6,12 @@ class DraggablePlayerHorizontal extends StatefulWidget {
   final int frameCount;
   final double width;
   final double height;
+  final Function(double) onPositionChanged;
 
   const DraggablePlayerHorizontal({
     super.key,
     required this.imagePathBase,
+    required this.onPositionChanged, 
     this.frameCount = 3,
     this.width = 80,
     this.height = 100,
@@ -60,16 +62,17 @@ class _DraggablePlayerHorizontalState extends State<DraggablePlayerHorizontal> {
         return GestureDetector(
           onPanUpdate: (details) {
             setState(() {
-              _xPosition += details.delta.dx; 
+              _xPosition += details.delta.dx;
               _xPosition = _xPosition.clamp(minX, maxX);
             });
+            widget.onPositionChanged(_xPosition); 
           },
           child: Container(
             width: maxWidth,
             height: widget.height + 20,
             alignment: Alignment.center,
             child: Transform.translate(
-              offset: Offset(_xPosition, 0), 
+              offset: Offset(_xPosition, 0),
               child: Image.asset(
                 currentImagePath,
                 width: widget.width,

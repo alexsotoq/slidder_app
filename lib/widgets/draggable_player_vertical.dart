@@ -6,10 +6,12 @@ class DraggablePlayerVertical extends StatefulWidget {
   final int frameCount;
   final double width;
   final double height;
+  final Function(double) onPositionChanged;
 
   const DraggablePlayerVertical({
     super.key,
     required this.imagePathBase,
+    required this.onPositionChanged,
     this.frameCount = 3,
     this.width = 80,
     this.height = 100,
@@ -51,7 +53,7 @@ class _DraggablePlayerVerticalState extends State<DraggablePlayerVertical> {
     final currentImagePath = '${widget.imagePathBase}_$_currentFrame.png';
 
     return LayoutBuilder(
-      builder: (context, constraints) {        
+      builder: (context, constraints) {
         final maxHeight = constraints.maxHeight;
         final playerHalfHeight = widget.height / 2;
         final minY = -maxHeight / 2 + playerHalfHeight;
@@ -59,17 +61,18 @@ class _DraggablePlayerVerticalState extends State<DraggablePlayerVertical> {
 
         return GestureDetector(
           onPanUpdate: (details) {
-            setState(() {              
+            setState(() {
               _yPosition += details.delta.dy;
               _yPosition = _yPosition.clamp(minY, maxY);
             });
+            widget.onPositionChanged(_yPosition);
           },
           child: Container(
             width: widget.width + 20,
             height: maxHeight,
             alignment: Alignment.center,
             child: Transform.translate(
-              offset: Offset(0, _yPosition), 
+              offset: Offset(0, _yPosition),
               child: Image.asset(
                 currentImagePath,
                 width: widget.width,

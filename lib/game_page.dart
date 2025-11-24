@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import '../models/obstacle_model.dart';
 import 'widgets/draggable_player_horizontal.dart';
 import 'widgets/draggable_player_vertical.dart';
-import 'widgets/infinite_scroll_map.dart'; 
+import 'widgets/infinite_scroll_map.dart';
 
 class GamePage extends StatefulWidget {
   final String playerName;
@@ -18,62 +21,217 @@ class GamePage extends StatefulWidget {
 
 class _GamePageState extends State<GamePage> {
   int _counter = 0;
-  // late final SupabaseService _supabaseService; // Supabase Desactivado
-  // bool _isSignedIn = false; // Supabase Desactivado
-  bool _isVertical = true; // true = vertical, false = horizontal
-  Timer? _gameTimer; // Timer para el bucle del juego
-  
-  final Duration _gameTickSpeed = const Duration(milliseconds: 100);
-  // final Duration _saveTickSpeed = const Duration(seconds: 5); // Supabase Desactivado
+  int _lives = 3;
+  bool _isGameOver = false;
+  bool _isInvincible = false;
+  bool _isVertical = true;
+  Timer? _gameTimer;
+  final Duration _gameTickSpeed = const Duration(milliseconds: 50);
+  double _gameSpeed = 8.0;
+  final List<Obstacle> _obstacles = [];
+  final Random _random = Random();
+  double _playerPosition = 0.0;
+  int _spawnTimer = 0;
+  final AudioPlayer _musicPlayer = AudioPlayer();
+  final AudioPlayer _sfxPlayer = AudioPlayer();
+
+  final List<String> _obstacleSprites = [
+    'assets/items/rock.png',
+    'assets/items/bush.png',
+    'assets/pokemon/geodude.png',
+  ];
 
   @override
   void initState() {
     super.initState();
-    // _supabaseService = SupabaseService(); // Supabase Desactivado
-    _initializeData();
+    _initializeGame();
   }
 
-  void _toggleOrientation() {
-    setState(() {
-      _isVertical = !_isVertical;
-    });
-  }
+  Future<void> _initializeGame() async {
+    await _musicPlayer.setReleaseMode(ReleaseMode.loop);
+    await _musicPlayer.play(AssetSource('audio/music.mp3'));
+    _musicPlayer.setVolume(0.5);
 
-  Future<void> _initializeData() async {
-    // --- Supabase Desactivado ---
-    // (Cuando se active, usar 'widget.playerName')
-    // final points = await _supabaseService.retrievePoints(
-    //     playerName: widget.playerName, 
-    //   );
-    
     _startGameLoop();
   }
 
   void _startGameLoop() {
-    _gameTimer?.cancel(); 
+    _gameTimer?.cancel();
     _gameTimer = Timer.periodic(_gameTickSpeed, (timer) {
+      if (_isGameOver) {
+        timer.cancel();
+        _musicPlayer.stop();
+        return;
+      }
       _incrementCounter();
-    });
-  }
-  
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
+      _updateObstacles();
+      _checkCollisions();
     });
   }
 
-  // --- Supabase Desactivado ---
-  // (Cuando se active, usar 'widget.playerName')
-  // void _saveScore() {
-  //   _supabaseService.checkAndUpsertPlayer(
-  //     playerName: widget.playerName,
-  //     score: _counter,
-  //   );
-  // }
+  void _incrementCounter() {
+    setState(() {
+      _counter++;      
+      if (_counter % 500 == 0) _gameSpeed += 1.0;
+    });
+  }
+
+  void _updateObstacles() {
+    setState(() {
+      for (var obstacle in _obstacles) {
+        if (_isVertical) {
+          obstacle.y += _gameSpeed;
+        } else {
+          obstacle.x -= _gameSpeed;
+        }
+      }
+
+      _obstacles.removeWhere((obs) {
+        if (_isVertical) return obs.y > 1000;
+        return obs.x < -600;
+      });
+
+      _spawnTimer++;
+      if (_spawnTimer > 30) {
+        _spawnNewObstacle();
+        _spawnTimer = 0;
+      }
+    });
+  }
+
+  void _spawnNewObstacle() {
+    final sprite = _obstacleSprites[_random.nextInt(_obstacleSprites.length)];
+    final size = MediaQuery.of(context).size;
+
+    if (_isVertical) {
+      double randomX = (_random.nextDouble() * 300) - 150;
+      _obstacles.add(Obstacle(
+        id: DateTime.now().toString(),
+        imagePath: sprite,
+        x: randomX,
+        y: -100,
+      ));
+    } else {
+      double randomY = (_random.nextDouble() * 400) - 200;
+      _obstacles.add(Obstacle(
+        id: DateTime.now().toString(),
+        imagePath: sprite,
+        x: size.width + 100,
+        y: randomY,
+      ));
+    }
+  }
+
+  void _checkCollisions() {
+    if (_isInvincible) return;
+
+    final screenSize = MediaQuery.of(context).size;
+    final centerX = screenSize.width / 2;
+    final centerY = screenSize.height / 2;
+
+    Rect playerRect;
+    if (_isVertical) {
+      playerRect = Rect.fromCenter(
+        center: Offset(centerX + _playerPosition, screenSize.height - 150),
+        width: 40, height: 40,
+      );
+    } else {
+      playerRect = Rect.fromCenter(
+        center: Offset(80, centerY + _playerPosition),
+        width: 40, height: 40,
+      );
+    }
+
+    for (var obstacle in _obstacles) {
+      Rect obstacleRect;
+      if (_isVertical) {
+        obstacleRect = Rect.fromCenter(
+          center: Offset(centerX + obstacle.x, obstacle.y),
+          width: obstacle.width * 0.7, height: obstacle.height * 0.7,
+        );
+      } else {
+        obstacleRect = Rect.fromCenter(
+          center: Offset(obstacle.x, centerY + obstacle.y),
+          width: obstacle.width * 0.7, height: obstacle.height * 0.7,
+        );
+      }
+
+      if (playerRect.overlaps(obstacleRect)) {
+        _handleHit();
+        break;
+      }
+    }
+  }
+
+  void _handleHit() {
+    _sfxPlayer.play(AssetSource('audio/hit.wav'));
+
+    setState(() {
+      _lives--;
+      
+      if (_lives <= 0) {
+        _triggerGameOver();
+      } else {        
+        _isInvincible = true;
+        Timer(const Duration(seconds: 2), () {
+          if (mounted) {
+            setState(() {
+              _isInvincible = false;
+            });
+          }
+        });
+      }
+    });
+  }
+
+  void _triggerGameOver() {
+    setState(() {
+      _isGameOver = true;
+    });
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("¡Game Over!"),
+        content: Text("Distancia recorrida: $_counter m"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _resetGame();
+            },
+            child: const Text("Reintentar"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text("Salir"),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _resetGame() {
+    setState(() {
+      _counter = 0;
+      _lives = 3;
+      _obstacles.clear();
+      _isGameOver = false;
+      _isInvincible = false;
+      _gameSpeed = 8.0;
+    });
+    _musicPlayer.resume();
+    _startGameLoop();
+  }
 
   @override
   void dispose() {
     _gameTimer?.cancel();
+    _musicPlayer.dispose();
+    _sfxPlayer.dispose();
     super.dispose();
   }
 
@@ -86,9 +244,13 @@ class _GamePageState extends State<GamePage> {
         actions: [
           IconButton(
             icon: Icon(_isVertical ? Icons.swap_horiz : Icons.swap_vert),
-            tooltip: _isVertical ? 'Cambiar a horizontal' : 'Cambiar a vertical',
-            onPressed: _toggleOrientation,
-            padding: const EdgeInsets.only(top: 8.0, right: 16.0),
+            onPressed: () {
+               setState(() {
+                 _isVertical = !_isVertical;
+                 _obstacles.clear();
+                 _playerPosition = 0;
+               });
+            },
           ),
         ],
       ),
@@ -98,86 +260,100 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
+  Widget _buildPlayerWidget() {    
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 100),
+      opacity: _isInvincible ? 0.5 : 1.0,
+      child: _isVertical 
+        ? DraggablePlayerHorizontal(
+            imagePathBase: 'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_vertical',
+            frameCount: 3, width: 80, height: 80,
+            onPositionChanged: (val) => _playerPosition = val,
+          )
+        : DraggablePlayerVertical(
+            imagePathBase: 'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_lateral',
+            frameCount: 3, width: 80, height: 80,
+            onPositionChanged: (val) => _playerPosition = val,
+          ),
+    );
+  }
+
   Widget _buildVerticalLayout() {
+    final screenSize = MediaQuery.of(context).size;
     return InfiniteScrollMap(
       imagePath: 'assets/maps/mapa_vertical.png',
       scrollDirection: Axis.vertical,
       duration: const Duration(seconds: 10),
       reverse: true,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          const Spacer(flex: 1),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              children: [
-                const Text('Distancia:'),
-                const SizedBox(height: 10),
-                Text(
-                  '$_counter',
-                  style: Theme.of(context).textTheme.headlineLarge,
-                ),
-              ],
+      child: Stack(
+        children: [
+          ..._obstacles.map((obstacle) => Positioned(
+              left: (screenSize.width / 2) + obstacle.x - (obstacle.width / 2),
+              top: obstacle.y - (obstacle.height / 2),
+              child: Image.asset(obstacle.imagePath, width: obstacle.width, height: obstacle.height, fit: BoxFit.contain),
+          )),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 40.0),
+              child: _buildPlayerWidget(),
             ),
           ),
-          const Spacer(flex: 2),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 40.0),
-            child: DraggablePlayerHorizontal(
-              imagePathBase: 'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_vertical',
-              frameCount: 3,
-              width: 80,
-              height: 80,
-            ),
-          ),
+          _buildHUD(),
         ],
       ),
     );
   }
 
   Widget _buildHorizontalLayout() {
+    final screenSize = MediaQuery.of(context).size;
     return InfiniteScrollMap(
       imagePath: 'assets/maps/mapa_horizontal.png',
       scrollDirection: Axis.horizontal,
       duration: const Duration(seconds: 10),
-      reverse: false, 
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(left: 40.0),
-            child: DraggablePlayerVertical(
-              imagePathBase: 'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_lateral',
-              frameCount: 3,
-              width: 80,
-              height: 80,
+      reverse: false,
+      child: Stack(
+        children: [
+          ..._obstacles.map((obstacle) => Positioned(
+              left: obstacle.x - (obstacle.width / 2),
+              top: (screenSize.height / 2) + obstacle.y - (obstacle.height / 2),
+              child: Image.asset(obstacle.imagePath, width: obstacle.width, height: obstacle.height, fit: BoxFit.contain),
+          )),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 40.0),
+              child: _buildPlayerWidget(),
             ),
           ),
-          const Spacer(flex: 2),
+          _buildHUD(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHUD() {
+    return Positioned(
+      top: 20,
+      right: 20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end, 
+        children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Distancia:'),
-                const SizedBox(height: 10),
-                Text(
-                  '$_counter',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-              ],
-            ),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.8), borderRadius: BorderRadius.circular(8)),
+            child: Text('Distancia: $_counter m', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ),
-          const Spacer(flex: 2),
+          const SizedBox(height: 10),
+          Row(
+            children: List.generate(3, (index) {
+              return Icon(
+                index < _lives ? Icons.favorite : Icons.favorite_border, 
+                color: Colors.red,
+                size: 30,
+              );
+            }),
+          )
         ],
       ),
     );
