@@ -11,10 +11,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   cupertino_icons: ^1.0.8
   supabase_flutter: ^2.10.3
   flutter_dotenv: ^5.1.0
+  audioplayers: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -32,5 +32,8 @@ flutter:
     - .env
     - assets/maps/
     - assets/players/
+    - assets/items/
+    - assets/pokemon/
     - assets/pokemon/red/
     - assets/pokemon/green/
+    - assets/audio/
