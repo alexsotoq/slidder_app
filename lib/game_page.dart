@@ -92,10 +92,18 @@ class _GamePageState extends State<GamePage> {
       });
 
       _spawnTimer++;
+
       if (_spawnTimer > 30) {
-        _spawnNewObstacle();
+        // 15% de probabilidad de llamar a la función de spawn de poción, para que la recuperación no sea tan común
+        if (_random.nextInt(100) < 15) {
+           _spawnPotion(); 
+        } else {
+           // Si no, spawn de obstaculos normal
+           _spawnNewObstacle(); 
+        }
         _spawnTimer = 0;
       }
+     
     });
   }
 
@@ -120,6 +128,15 @@ class _GamePageState extends State<GamePage> {
         y: randomY,
       ));
     }
+  }
+
+  void _collectPotion(Obstacle potion) {
+    setState(() {
+      if (_lives < 3) { // Tope de 3 vidas
+        _lives++;
+      }
+      _obstacles.remove(potion); // Importante: Borrarla al tocarla
+    });
   }
 
   void _checkCollisions() {
@@ -157,8 +174,14 @@ class _GamePageState extends State<GamePage> {
       }
 
       if (playerRect.overlaps(obstacleRect)) {
-        _handleHit();
-        break;
+        // Si el archivo de imagen dice "potion", es curativa
+        if (obstacle.imagePath.contains('potion')) {
+          _collectPotion(obstacle);
+        } else {
+          // Si no, es daño normal
+          _handleHit();
+        }
+        break; 
       }
     }
   }
@@ -182,6 +205,28 @@ class _GamePageState extends State<GamePage> {
         });
       }
     });
+  }
+
+  void _spawnPotion() {
+    final size = MediaQuery.of(context).size;
+    // Lógica para que aparezca en la posición correcta según la orientación
+    if (_isVertical) {
+      double randomX = (_random.nextDouble() * 300) - 150;
+      _obstacles.add(Obstacle(
+        id: DateTime.now().toString(),
+        imagePath: 'assets/items/potion.png', 
+        x: randomX,
+        y: -100,
+      ));
+    } else {
+      double randomY = (_random.nextDouble() * 400) - 200;
+      _obstacles.add(Obstacle(
+        id: DateTime.now().toString(),
+        imagePath: 'assets/items/potion.png', // La poción curativa
+        x: size.width + 100,
+        y: randomY,
+      ));
+    }
   }
 
   void _triggerGameOver() {
@@ -332,30 +377,47 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  Widget _buildHUD() {
+
+//Vidas del jugador 
+Widget _buildHUD() {
     return Positioned(
       top: 20,
       right: 20,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end, 
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.8), borderRadius: BorderRadius.circular(8)),
-            child: Text('Distancia: $_counter m', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(8)),
+            child: Text('Distancia: $_counter m',
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ),
           const SizedBox(height: 10),
           Row(
             children: List.generate(3, (index) {
-              return Icon(
-                index < _lives ? Icons.favorite : Icons.favorite_border, 
-                color: Colors.red,
-                size: 30,
+              // Calculamos si esta vida está activa
+              bool isLifeActive = index < _lives;
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2.0), //Espacio entre pokebolas
+                child: Opacity(
+                  // Si la vida está activa, opacidad 1.0 (full color)
+                  // Si la vida se perdió, opacidad 0.4 (semi-transparente)
+                  opacity: isLifeActive ? 1.0 : 0.4, 
+                  child: Image.asset(
+                    'assets/items/pokeball.png',
+                    width: 30, 
+                    height: 30,
+                  ),
+                ),
               );
             }),
           )
         ],
       ),
     );
-  }
+}
 }
