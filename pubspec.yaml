@@ -25,6 +25,11 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
 
+  fonts:
+    - family: PressStart2P
+      fonts:
+        - asset: assets/fonts/PressStart2P-Regular.ttf
+
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
@@ -37,3 +42,6 @@ flutter:
     - assets/pokemon/red/
     - assets/pokemon/green/
     - assets/audio/
+    - assets/fonts/
+    - assets/seamless-pokeball-pattern-vector-11290309.png
+# 896ff4017e1270fb5bbb3fccd2f62b19542965d1
