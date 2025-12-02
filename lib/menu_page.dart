@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'game_page.dart';
+import 'game_page.dart'; // Asegúrate de que tu GamePage acepte el parámetro mapName
 import 'player_select_page.dart';
+import 'map_select_page.dart'; // Nueva página importada
+import 'credits_page.dart';    // Nueva página importada
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -12,6 +14,9 @@ class MenuPage extends StatefulWidget {
 class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
   // Jugador seleccionado actualmente ('red' o 'green')
   String _selectedPlayer = 'red';
+
+  // Mapa seleccionado actualmente (nuevo estado)
+  String _selectedMap = 'forest';
 
   // Controlador para animación de flotación del personaje (arriba/abajo)
   late AnimationController _floatController;
@@ -67,75 +72,140 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
           // Capa 3: Contenido del menú
           SafeArea(
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Spacer(flex: 2), // Espacio superior flexible
-                  _buildTitle(),
-                  const SizedBox(height: 40),
+              // SingleChildScrollView agregado para evitar overflow en pantallas pequeñas
+              // debido a los nuevos botones
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 20),
+                    _buildTitle(),
+                    const SizedBox(height: 30),
 
-                  // Personaje con animación de flotación
-                  AnimatedBuilder(
-                    animation: _floatAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, _floatAnimation.value),
-                        child: _buildCharacterFrame(),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 60),
-
-                  // Botón para iniciar juego
-                  _PixelButton(
-                    text: "JUGAR",
-                    color: const Color(0xFFE8A87C),
-                    darkColor: const Color(0xFFD38B5D),
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => GamePage(playerName: _selectedPlayer),
-                      ),
+                    // Personaje con animación de flotación
+                    AnimatedBuilder(
+                      animation: _floatAnimation,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(0, _floatAnimation.value),
+                          child: _buildCharacterFrame(),
+                        );
+                      },
                     ),
-                  ),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 40),
 
-                  // Botón para seleccionar personaje
-                  _PixelButton(
-                    text: "ELEGIR JUGADOR",
-                    color: const Color(0xFFE57373),
-                    darkColor: const Color(0xFFD35D5D),
-                    onPressed: () async {
-                      // Abre página de selección y espera resultado
-                      final result = await Navigator.push<String>(
+                    // --- SECCIÓN DE BOTONES ---
+
+                    // 1. Botón para iniciar juego
+                    _PixelButton(
+                      text: "JUGAR",
+                      color: const Color(0xFFE8A87C), // Naranja suave
+                      darkColor: const Color(0xFFD38B5D),
+                      onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => PlayerSelectPage(
-                            currentPlayer: _selectedPlayer,
+                          // NOTA: Asegúrate de actualizar el constructor de GamePage
+                          // para recibir el mapa si es necesario.
+                          builder: (context) => GamePage(
+                            playerName: _selectedPlayer,
+                            // mapName: _selectedMap // Descomentar si GamePage lo soporta
                           ),
                         ),
-                      );
-                      // Actualiza jugador seleccionado si hay resultado
-                      if (result != null) setState(() => _selectedPlayer = result);
-                    },
-                  ),
-
-                  const Spacer(flex: 2), // Espacio inferior flexible
-
-                  // Versión de la app
-                  Text(
-                    "VERSION 1.0",
-                    style: TextStyle(
-                      fontFamily: 'PressStart2P',
-                      fontSize: 8,
-                      color: Colors.white,
-                      letterSpacing: 1,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+
+                    const SizedBox(height: 12),
+
+                    // 2. Botón para seleccionar personaje
+                    _PixelButton(
+                      text: "ELEGIR JUGADOR",
+                      color: const Color(0xFFE57373), // Rojo suave
+                      darkColor: const Color(0xFFD35D5D),
+                      onPressed: () async {
+                        // Abre página de selección y espera resultado
+                        final result = await Navigator.push<String>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlayerSelectPage(
+                              currentPlayer: _selectedPlayer,
+                            ),
+                          ),
+                        );
+                        // Actualiza jugador seleccionado si hay resultado
+                        if (result != null) setState(() => _selectedPlayer = result);
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // 3. Botón para seleccionar mapa (NUEVO)
+                    _PixelButton(
+                      text: "ELEGIR MAPA",
+                      color: const Color(0xFF81C784), // Verde suave (Estilo Planta/Bosque)
+                      darkColor: const Color(0xFF519657),
+                      onPressed: () async {
+                        // Navega a la selección de mapa y espera el string del mapa
+                        final result = await Navigator.push<String>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MapSelectPage(
+                              currentMap: _selectedMap,
+                            ),
+                          ),
+                        );
+                        // Actualiza el mapa si el usuario eligió uno
+                        if (result != null) setState(() => _selectedMap = result);
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // 4. Botón de Créditos (NUEVO)
+                    _PixelButton(
+                      text: "CREDITOS",
+                      color: const Color(0xFF64B5F6), // Azul suave (Estilo Agua/Hielo)
+                      darkColor: const Color(0xFF2286C3),
+                      onPressed: () {
+                        // Navegación simple a página informativa
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const CreditsPage()),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    // Versión de la app y Mapa seleccionado
+                    Column(
+                      children: [
+                        /*
+                        Text(
+                          "MAPA: ${_selectedMap.toUpperCase()}",
+                          style: const TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10,
+                            color: Color(0xFF81C784), // Verde claro para destacar
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        */
+                        const Text(
+                          "VERSION 1.0",
+                          style: TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 8,
+                            color: Colors.white,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ),
@@ -206,7 +276,7 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
               left: 4,
               child: Text(
                 "POKEMON",
-                style: TextStyle(
+                style: const TextStyle(
                   fontFamily: 'PressStart2P',
                   fontSize: 32,
                   color: Colors.black,
@@ -257,20 +327,6 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
         // Frame decorativo con sombra
         Stack(
           children: [
-            // Sombra del frame (desplazada 6px abajo y derecha)
-            Positioned(
-              top: 6,
-              left: 6,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  color: Colors.black26,
-                  border: Border.all(color: Colors.black38, width: 4),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
             // Frame principal
             Container(
               width: 180,
@@ -298,7 +354,9 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                       left: i == 0 || i == 2 ? 10 : null,
                       right: i == 1 || i == 3 ? 10 : null,
                       child: Transform.rotate(
-                        angle: i * 1.5708, // Rota 90° por cada esquina (1.5708 rad = 90°)
+                        // CORRECCIÓN: Asignamos manualmente los ángulos correctos
+                        // 0: 0° (TL), 1: 90° (TR), 2: 270° (BL), 3: 180° (BR)
+                        angle: [0.0, 1.5708, 4.71239, 3.14159][i],
                         child: CustomPaint(
                           size: const Size(10, 10),
                           painter: _CornerPainter(),
@@ -340,7 +398,7 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
   }
 }
 
-/// Botón estilo pixel art con efectos hover y presionado
+/// Botón estilo pixel art con efectos hover y presionado (Reutilizable)
 class _PixelButton extends StatefulWidget {
   final String text;
   final Color color; // Color principal del botón
@@ -381,20 +439,6 @@ class _PixelButtonState extends State<_PixelButton> {
           curve: Curves.easeOut,
           child: Stack(
             children: [
-              // Sombra del botón (solo visible cuando NO está presionado)
-              if (!_isPressed)
-                Positioned(
-                  top: 6,
-                  left: 6,
-                  child: Container(
-                    width: 280,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
               // Botón principal que se mueve cuando se presiona
               AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
@@ -462,9 +506,6 @@ class _PixelButtonState extends State<_PixelButton> {
 }
 
 /// Dibuja decoración en forma de "L" para las esquinas del frame
-///
-/// Pinta dos líneas perpendiculares formando una esquina
-/// Se rota en diferentes ángulos para cada posición
 class _CornerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
