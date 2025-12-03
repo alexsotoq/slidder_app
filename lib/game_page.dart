@@ -330,7 +330,7 @@ class _GamePageState extends State<GamePage> {
     final screenSize = MediaQuery.of(context).size;
     String mapImage;
   if (widget.selectedMap == 'Parque') { //Si el mapa seleccionado es Parque, usar la imagen correspondiente
-    mapImage = 'assets/maps/mapa_vertical.png';
+    mapImage = 'assets/maps/mapa_parque_vertical.png';
   } else { //Si no, usar la imagen de Ciudad
     mapImage = 'assets/maps/mapa_city_vertical.png'; 
   }
@@ -363,7 +363,7 @@ class _GamePageState extends State<GamePage> {
     final screenSize = MediaQuery.of(context).size;
     String mapImage;
   if (widget.selectedMap == 'Parque') { //Si el mapa seleccionado es Parque, usar la imagen correspondiente
-    mapImage = 'assets/maps/mapa_horizontal.png';
+    mapImage = 'assets/maps/mapa_parque_horizontal.png';
   } else { //Si no, usar la imagen de Ciudad
     mapImage = 'assets/maps/mapa_city_horizontal.png';
   }
