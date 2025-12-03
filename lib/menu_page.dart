@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'game_page.dart'; // Asegúrate de que tu GamePage acepte el parámetro mapName
 import 'player_select_page.dart';
 import 'map_select_page.dart'; // Nueva página importada
-import 'credits_page.dart';    // Nueva página importada
+import 'credits_page.dart'; // Nueva página importada
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -16,7 +16,7 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
   String _selectedPlayer = 'red';
 
   // Mapa seleccionado actualmente (nuevo estado)
-  String _selectedMap = 'forest';
+  String _selectedMap = 'Parque';
 
   // Controlador para animación de flotación del personaje (arriba/abajo)
   late AnimationController _floatController;
@@ -109,7 +109,7 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                           // para recibir el mapa si es necesario.
                           builder: (context) => GamePage(
                             playerName: _selectedPlayer,
-                            // mapName: _selectedMap // Descomentar si GamePage lo soporta
+                            selectedMap: _selectedMap,
                           ),
                         ),
                       ),
@@ -128,12 +128,13 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                           context,
                           MaterialPageRoute(
                             builder: (context) => PlayerSelectPage(
-                                currentPlayer: _selectedPlayer,
+                              currentPlayer: _selectedPlayer,
                             ),
                           ),
                         );
                         // Actualiza jugador seleccionado si hay resultado
-                        if (result != null) setState(() => _selectedPlayer = result);
+                        if (result != null)
+                          setState(() => _selectedPlayer = result);
                       },
                     ),
 
@@ -142,20 +143,21 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                     // 3. Botón para seleccionar mapa (NUEVO)
                     _PixelButton(
                       text: "ELEGIR MAPA",
-                      color: const Color(0xFF81C784), // Verde suave (Estilo Planta/Bosque)
+                      color: const Color(0xFF81C784),
+                      // Verde suave (Estilo Planta/Bosque)
                       darkColor: const Color(0xFF519657),
                       onPressed: () async {
                         // Navega a la selección de mapa y espera el string del mapa
                         final result = await Navigator.push<String>(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => MapSelectPage(
-                              currentMap: _selectedMap,
-                            ),
+                            builder: (context) =>
+                                MapSelectPage(currentMap: _selectedMap),
                           ),
                         );
                         // Actualiza el mapa si el usuario eligió uno
-                        if (result != null) setState(() => _selectedMap = result);
+                        if (result != null)
+                          setState(() => _selectedMap = result);
                       },
                     ),
 
@@ -164,14 +166,16 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                     // 4. Botón de Créditos (NUEVO)
                     _PixelButton(
                       text: "CREDITOS",
-                      color: const Color(0xFF64B5F6), // Azul suave (Estilo Agua/Hielo)
+                      color: const Color(0xFF64B5F6),
+                      // Azul suave (Estilo Agua/Hielo)
                       darkColor: const Color(0xFF2286C3),
                       onPressed: () {
                         // Navegación simple a página informativa
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const CreditsPage(
-                          )),
+                          MaterialPageRoute(
+                            builder: (context) => const CreditsPage(),
+                          ),
                         );
                       },
                     ),
@@ -230,7 +234,8 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
 
             // Calcula offset actual usando módulo para loop infinito
             // Value va de 0.0 a 1.0, multiplicado por altura da píxeles
-            final offset = (_backgroundController.value * patternHeight) % patternHeight;
+            final offset =
+                (_backgroundController.value * patternHeight) % patternHeight;
 
             return ClipRect(
               child: Stack(
@@ -247,11 +252,17 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                         height: constraints.maxHeight + patternHeight,
                         decoration: const BoxDecoration(
                           image: DecorationImage(
-                            image: AssetImage('assets/seamless-pokeball-pattern-vector-11290309.png'),
-                            repeat: ImageRepeat.repeat, // Repite horizontalmente
-                            fit: BoxFit.none, // No estira la imagen
-                            scale: 2.0, // Hace la imagen más pequeña (2x = mitad de tamaño)
-                            filterQuality: FilterQuality.none, // Sin suavizado para pixel art
+                            image: AssetImage(
+                              'assets/seamless-pokeball-pattern-vector-11290309.png',
+                            ),
+                            repeat: ImageRepeat.repeat,
+                            // Repite horizontalmente
+                            fit: BoxFit.none,
+                            // No estira la imagen
+                            scale: 2.0,
+                            // Hace la imagen más pequeña (2x = mitad de tamaño)
+                            filterQuality: FilterQuality
+                                .none, // Sin suavizado para pixel art
                           ),
                         ),
                       ),
@@ -302,8 +313,10 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFFE57373), // Rojo claro
-            border: Border.all(color: const Color(0xFFD35D5D), width: 3), // Borde rojo oscuro
+            color: const Color(0xFFE57373),
+            // Rojo claro
+            border: Border.all(color: const Color(0xFFD35D5D), width: 3),
+            // Borde rojo oscuro
             borderRadius: BorderRadius.circular(4),
           ),
           child: const Text(
@@ -333,8 +346,10 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
               width: 180,
               height: 180,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF8E1), // Color crema
-                border: Border.all(color: const Color(0xFFE8A87C), width: 5), // Borde naranja
+                color: const Color(0xFFFFF8E1),
+                // Color crema
+                border: Border.all(color: const Color(0xFFE8A87C), width: 5),
+                // Borde naranja
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
@@ -370,7 +385,8 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                       'assets/players/${_selectedPlayer == 'red' ? 'red_player.png' : 'player_green.png'}',
                       height: 120,
                       fit: BoxFit.contain,
-                      filterQuality: FilterQuality.none, // Sin suavizado para pixel art
+                      filterQuality:
+                          FilterQuality.none, // Sin suavizado para pixel art
                     ),
                   ),
                 ],
@@ -390,7 +406,11 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
             filterQuality: FilterQuality.none,
             // Muestra ícono si falla la carga
             errorBuilder: (context, error, stackTrace) {
-              return const Icon(Icons.directions_bike, size: 70, color: Colors.white);
+              return const Icon(
+                Icons.directions_bike,
+                size: 70,
+                color: Colors.white,
+              );
             },
           ),
         ),
@@ -460,12 +480,12 @@ class _PixelButtonState extends State<_PixelButton> {
                   // Glow effect al hacer hover
                   boxShadow: _isHovered && !_isPressed
                       ? [
-                    BoxShadow(
-                      color: widget.color.withOpacity(0.4),
-                      blurRadius: 15,
-                      spreadRadius: 2,
-                    )
-                  ]
+                          BoxShadow(
+                            color: widget.color.withOpacity(0.4),
+                            blurRadius: 15,
+                            spreadRadius: 2,
+                          ),
+                        ]
                       : [],
                 ),
                 child: Container(
@@ -474,8 +494,14 @@ class _PixelButtonState extends State<_PixelButton> {
                     borderRadius: BorderRadius.circular(8),
                     // Borde de highlight en top y left para efecto 3D
                     border: Border(
-                      top: BorderSide(color: Colors.white.withOpacity(0.5), width: 2),
-                      left: BorderSide(color: Colors.white.withOpacity(0.5), width: 2),
+                      top: BorderSide(
+                        color: Colors.white.withOpacity(0.5),
+                        width: 2,
+                      ),
+                      left: BorderSide(
+                        color: Colors.white.withOpacity(0.5),
+                        width: 2,
+                      ),
                     ),
                   ),
                   child: Center(
@@ -511,7 +537,8 @@ class _CornerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFFFAB91) // Naranja claro
+      ..color =
+          const Color(0xFFFFAB91) // Naranja claro
       ..strokeWidth = 7
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round; // Extremos redondeados
