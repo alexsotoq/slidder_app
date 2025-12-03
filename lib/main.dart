@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'menu_page.dart';
+import 'global_background.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  
-  // Configuración de Supabase, pero está desactivada por ahora
 
   runApp(const MyApp());
 }
@@ -16,14 +15,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Pokémon Runner',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-        useMaterial3: true,
+    // SOLUCIÓN: Envolver el MaterialApp completo
+    return GlobalBackgroundWrapper(
+      child: MaterialApp(
+        title: 'Pokémon Runner',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+          useMaterial3: true,
+        ),
+        home: const MenuPage(),
       ),
-      home: const MenuPage(),
     );
   }
 }

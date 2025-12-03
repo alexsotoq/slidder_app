@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'global_background.dart';
 
 class PlayerSelectPage extends StatefulWidget {
   final String currentPlayer;
-  final Color? backgroundColor; // Nuevo parámetro opcional para color de fondo
+  final Color? backgroundColor;
 
   const PlayerSelectPage({
     super.key,
     required this.currentPlayer,
-    this.backgroundColor, // Parámetro opcional
+    this.backgroundColor,
   });
 
   @override
@@ -18,14 +19,12 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
   late String _selectedPlayer;
   late AnimationController _floatController;
   late Animation<double> _floatAnimation;
-  late AnimationController _backgroundController; // Nuevo controlador para scroll del fondo
 
   @override
   void initState() {
     super.initState();
     _selectedPlayer = widget.currentPlayer;
 
-    // Configura animación de flotación similar al menú principal
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -34,18 +33,11 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
     _floatAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
       CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
     );
-
-    // NUEVO: Configura scroll continuo del fondo (igual que en menu_page)
-    _backgroundController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 15),
-    )..repeat();
   }
 
   @override
   void dispose() {
     _floatController.dispose();
-    _backgroundController.dispose(); // Nuevo: limpiar controlador
     super.dispose();
   }
 
@@ -54,19 +46,12 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
     return Scaffold(
       body: Stack(
         children: [
-          // NUEVO: Fondo con patrón scrolling (igual que menú principal)
-          _buildScrollingBackground(),
+          // USA EL FONDO GLOBAL COMPARTIDO
+          const ScrollingBackground(),
 
-          // Overlay con color personalizado o azul por defecto
-          Container(
-            color: widget.backgroundColor?.withOpacity(0.75) ?? Colors.blueAccent.withOpacity(0.75),
-          ),
-
-          // Contenido principal
           SafeArea(
             child: Column(
               children: [
-                // Botón de regreso en esquina superior izquierda
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
@@ -83,10 +68,8 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Título con efecto de sombra
                           Stack(
                             children: [
-                              // Sombra
                               Positioned(
                                 top: 4,
                                 left: 4,
@@ -100,7 +83,6 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
                                   ),
                                 ),
                               ),
-                              // Texto principal
                               const Text(
                                 "ELIGE TU",
                                 style: TextStyle(
@@ -115,7 +97,6 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
 
                           const SizedBox(height: 8),
 
-                          // Badge "JUGADOR"
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
@@ -136,7 +117,6 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
 
                           const SizedBox(height: 40),
 
-                          // Personajes seleccionables
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -162,17 +142,12 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
 
                           const SizedBox(height: 40),
 
-                          // Botón de confirmar
                           _PixelButton(
                             text: "CONFIRMAR",
                             color: const Color(0xFF81C784),
                             darkColor: const Color(0xFF519657),
                             onPressed: () => Navigator.pop(context, _selectedPlayer),
                           ),
-
-                          //const SizedBox(height: 30),
-
-
                         ],
                       ),
                     ),
@@ -183,51 +158,6 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
           ),
         ],
       ),
-    );
-  }
-
-  // NUEVO: Método para construir el fondo con scroll (copiado de menu_page)
-  Widget _buildScrollingBackground() {
-    return AnimatedBuilder(
-      animation: _backgroundController,
-      builder: (context, child) {
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            // Altura del patrón original en píxeles
-            const patternHeight = 1000.0;
-
-            // Calcula offset actual usando módulo para loop infinito
-            final offset = (_backgroundController.value * patternHeight) % patternHeight;
-
-            return ClipRect(
-              child: Stack(
-                children: [
-                  // Genera dos capas: una en offset actual, otra en offset - altura
-                  for (var i = -1; i <= 0; i++)
-                    Positioned(
-                      left: 0,
-                      top: offset + (i * patternHeight),
-                      child: Container(
-                        width: constraints.maxWidth,
-                        // Altura extra para cubrir durante transición
-                        height: constraints.maxHeight + patternHeight,
-                        decoration: const BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage('assets/seamless-pokeball-pattern-vector-11290309.png'),
-                            repeat: ImageRepeat.repeat,
-                            fit: BoxFit.none,
-                            scale: 2.0,
-                            filterQuality: FilterQuality.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            );
-          },
-        );
-      },
     );
   }
 }
@@ -261,22 +191,19 @@ class _PlayerCard extends StatelessWidget {
         },
         child: Column(
           children: [
-            // Frame del personaje
             Container(
               width: 160,
               height: 160,
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF8E1),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF81C784) : const Color(
-                      0xFFB7B7BD),
+                  color: isSelected ? const Color(0xFF81C784) : const Color(0xFFB7B7BD),
                   width: isSelected ? 6 : 4,
                 ),
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: (isSelected ? const Color(0xFF519657) : const Color(
-                        0xFF818185)).withOpacity(0.3),
+                    color: (isSelected ? const Color(0xFF519657) : const Color(0xFF818185)).withOpacity(0.3),
                     blurRadius: isSelected ? 15 : 10,
                     spreadRadius: isSelected ? 3 : 2,
                   ),
@@ -294,16 +221,13 @@ class _PlayerCard extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Nombre del personaje
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF81C784) : const Color(
-                    0xFFB7B7BD),
+                color: isSelected ? const Color(0xFF81C784) : const Color(0xFFB7B7BD),
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF519657) : const Color(
-                      0xFF818185),
+                  color: isSelected ? const Color(0xFF519657) : const Color(0xFF818185),
                   width: 2,
                 ),
               ),
@@ -330,7 +254,6 @@ class _PlayerCard extends StatelessWidget {
   }
 }
 
-// MODIFICADO: Botón VOLVER con el mismo estilo de borde interno blanco
 class _BackButton extends StatefulWidget {
   final VoidCallback onPressed;
 
@@ -361,7 +284,6 @@ class _BackButtonState extends State<_BackButton> {
           duration: const Duration(milliseconds: 200),
           child: Stack(
             children: [
-              // Botón principal con efecto de movimiento al presionar
               AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
                 margin: EdgeInsets.only(
@@ -415,7 +337,6 @@ class _BackButtonState extends State<_BackButton> {
   }
 }
 
-// Reutilizar el mismo botón pixel art del menú
 class _PixelButton extends StatefulWidget {
   final String text;
   final Color color;
