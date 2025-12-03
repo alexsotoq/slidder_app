@@ -63,7 +63,8 @@ class _DraggablePlayerVerticalState extends State<DraggablePlayerVertical> {
           onPanUpdate: (details) {
             setState(() {
               _yPosition += details.delta.dy;
-              _yPosition = _yPosition.clamp(minY, maxY);
+              double roadLimit = 75.0;
+              _yPosition = _yPosition.clamp(-roadLimit, roadLimit);
             });
             widget.onPositionChanged(_yPosition);
           },

@@ -2,104 +2,53 @@ import 'package:flutter/material.dart';
 
 class MapSelectPage extends StatelessWidget {
   final String currentMap;
-
-  const MapSelectPage({
-    super.key,
-    required this.currentMap,
-  });
+  
+  const MapSelectPage({super.key, required this.currentMap});
 
   @override
   Widget build(BuildContext context) {
-    // Reutilizamos el fondo azul semitransparente para consistencia
     return Scaffold(
-      backgroundColor: Colors.blueAccent,
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Título de la página
-              const Text(
-                "SELECCIONAR MAPA",
-                style: TextStyle(
-                  fontFamily: 'PressStart2P',
-                  fontSize: 24,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black,
-                      offset: Offset(4, 4),
-                      blurRadius: 0,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 50),
+      appBar: AppBar(
+        title: const Text('Elige el mapa'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _MapCard(
+              mapName: 'Parque',
+              imagePath: 'assets/maps/mapa_horizontal.png',
+              isSelected: currentMap == 'Parque',
+              onTap: () {
+                Navigator.pop(context, 'Parque');
+              },
+            ),
 
-              // Lista de opciones de mapas
-              // Usamos un estilo similar de botones pero simplificado para la selección
-              _MapOption(
-                mapId: 'forest',
-                label: 'BOSQUE VERDE',
-                color: const Color(0xFF81C784),
-                isSelected: currentMap == 'forest',
-                onTap: () => Navigator.pop(context, 'forest'),
-              ),
-
-              const SizedBox(height: 20),
-
-              _MapOption(
-                mapId: 'city',
-                label: 'CIUDAD AZULONA',
-                color: const Color(0xFF90CAF9),
-                isSelected: currentMap == 'city',
-                onTap: () => Navigator.pop(context, 'city'),
-              ),
-
-              const SizedBox(height: 20),
-
-              _MapOption(
-                mapId: 'volcano',
-                label: 'MONTE CENIZA',
-                color: const Color(0xFFE57373),
-                isSelected: currentMap == 'volcano',
-                onTap: () => Navigator.pop(context, 'volcano'),
-              ),
-
-              const SizedBox(height: 50),
-
-              // Botón de volver
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  "< VOLVER",
-                  style: TextStyle(
-                    fontFamily: 'PressStart2P',
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            _MapCard(
+              mapName: 'Ciudad',
+              imagePath: 'assets/maps/mapa_city_horizontal.png',
+              isSelected: currentMap == 'Ciudad',
+              onTap: () {
+                Navigator.pop(context, 'Ciudad');
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// Widget auxiliar privado para las opciones de mapa
-class _MapOption extends StatelessWidget {
-  final String mapId;
-  final String label;
-  final Color color;
+class _MapCard extends StatelessWidget {
+  final String mapName;
+  final String imagePath;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _MapOption({
-    required this.mapId,
-    required this.label,
-    required this.color,
+  const _MapCard({
+    required this.mapName,
+    required this.imagePath,
     required this.isSelected,
     required this.onTap,
   });
@@ -109,29 +58,34 @@ class _MapOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 300,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? color : Colors.black45,
-          border: Border.all(
-            color: isSelected ? Colors.white : Colors.white30,
-            width: 4,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'PressStart2P',
-                fontSize: 14,
-                color: isSelected ? Colors.black87 : Colors.white70,
-              ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: isSelected
+              ? Border.all(color: Colors.blue, width: 4)
+              : Border.all(color: Colors.grey.shade300, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: Colors.white),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              imagePath,
+              height: 50,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              mapName.toUpperCase(),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
           ],
         ),
       ),
