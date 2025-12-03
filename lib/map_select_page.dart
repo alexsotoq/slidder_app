@@ -18,7 +18,7 @@ class MapSelectPage extends StatelessWidget {
           children: [
             _MapCard(
               mapName: 'Parque',
-              imagePath: 'assets/maps/mapa_horizontal.png',
+              imagePath: 'assets/maps/mapa_parque_horizontal.png',
               isSelected: currentMap == 'Parque',
               onTap: () {
                 Navigator.pop(context, 'Parque');
