@@ -129,7 +129,6 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                           MaterialPageRoute(
                             builder: (context) => PlayerSelectPage(
                                 currentPlayer: _selectedPlayer,
-                                backgroundColor: const Color(0xFFEF9A9A)
                             ),
                           ),
                         );
@@ -171,7 +170,8 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                         // Navegación simple a página informativa
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const CreditsPage()),
+                          MaterialPageRoute(builder: (context) => const CreditsPage(
+                          )),
                         );
                       },
                     ),
