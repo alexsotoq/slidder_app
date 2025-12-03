@@ -9,10 +9,12 @@ import 'widgets/infinite_scroll_map.dart';
 
 class GamePage extends StatefulWidget {
   final String playerName;
+  final String selectedMap;
 
   const GamePage({
     super.key,
     required this.playerName,
+    required this.selectedMap,
   });
 
   @override
@@ -131,6 +133,7 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _collectPotion(Obstacle potion) {
+    _sfxPlayer.play(AssetSource('audio/potion.wav'));
     setState(() {
       if (_lives < 3) { // Tope de 3 vidas
         _lives++;
@@ -325,8 +328,14 @@ class _GamePageState extends State<GamePage> {
 
   Widget _buildVerticalLayout() {
     final screenSize = MediaQuery.of(context).size;
+    String mapImage;
+  if (widget.selectedMap == 'Parque') { //Si el mapa seleccionado es Parque, usar la imagen correspondiente
+    mapImage = 'assets/maps/mapa_vertical.png';
+  } else { //Si no, usar la imagen de Ciudad
+    mapImage = 'assets/maps/mapa_city_vertical.png'; 
+  }
     return InfiniteScrollMap(
-      imagePath: 'assets/maps/mapa_vertical.png',
+      imagePath: mapImage,
       scrollDirection: Axis.vertical,
       duration: const Duration(seconds: 10),
       reverse: true,
@@ -352,8 +361,14 @@ class _GamePageState extends State<GamePage> {
 
   Widget _buildHorizontalLayout() {
     final screenSize = MediaQuery.of(context).size;
+    String mapImage;
+  if (widget.selectedMap == 'Parque') { //Si el mapa seleccionado es Parque, usar la imagen correspondiente
+    mapImage = 'assets/maps/mapa_horizontal.png';
+  } else { //Si no, usar la imagen de Ciudad
+    mapImage = 'assets/maps/mapa_city_horizontal.png';
+  }
     return InfiniteScrollMap(
-      imagePath: 'assets/maps/mapa_horizontal.png',
+      imagePath: mapImage,
       scrollDirection: Axis.horizontal,
       duration: const Duration(seconds: 10),
       reverse: false,

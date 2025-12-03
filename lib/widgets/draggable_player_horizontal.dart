@@ -63,7 +63,9 @@ class _DraggablePlayerHorizontalState extends State<DraggablePlayerHorizontal> {
           onPanUpdate: (details) {
             setState(() {
               _xPosition += details.delta.dx;
-              _xPosition = _xPosition.clamp(minX, maxX);
+              double limiteIzquierdo = -340.0; 
+              double limiteDerecho = 320.0;   
+              _xPosition = _xPosition.clamp(limiteIzquierdo, limiteDerecho);
             });
             widget.onPositionChanged(_xPosition); 
           },
