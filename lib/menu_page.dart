@@ -289,8 +289,13 @@ final SupabaseService _supabaseService = SupabaseService();
                       ),
                     ),
                   Center(
+                    // para seleccionar entre cuatro personajes
                     child: Image.asset(
-                      'assets/players/${_selectedPlayer == 'red' ? 'red_player.png' : 'player_green.png'}',
+                      _selectedPlayer == 'red' ? 'assets/players/red_player.png' :
+                      _selectedPlayer == 'green' ? 'assets/players/player_green.png' :
+                      _selectedPlayer == 'brandon' ? 'assets/players/brandon_player.png' :
+                      'assets/players/may_player.png',
+
                       height: 120,
                       fit: BoxFit.contain,
                       filterQuality: FilterQuality.none,

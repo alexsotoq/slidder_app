@@ -117,25 +117,54 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
 
                           const SizedBox(height: 40),
 
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 20,
+                            runSpacing: 20,
                             children: [
                               _PlayerCard(
-                                playerName: 'RED',
-                                imagePath: 'assets/players/red_player.png',
+                                playerName: "RED",
+                                imagePath: "assets/players/red_player.png",
                                 isSelected: _selectedPlayer == 'red',
                                 floatAnimation: _floatAnimation,
-                                onTap: () => setState(() => _selectedPlayer = 'red'),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedPlayer = 'red';
+                                  });
+                                },
                               ),
-
-                              const SizedBox(width: 40),
-
                               _PlayerCard(
-                                playerName: 'GREEN',
-                                imagePath: 'assets/players/player_green.png',
+                                playerName: "GREEN",
+                                imagePath: "assets/players/player_green.png",
                                 isSelected: _selectedPlayer == 'green',
                                 floatAnimation: _floatAnimation,
-                                onTap: () => setState(() => _selectedPlayer = 'green'),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedPlayer = 'green';
+                                  });
+                                },
+                              ),
+                              _PlayerCard(
+                                playerName: "BRENDAN",
+                                imagePath: "assets/players/brendan_player.png",
+                                isSelected: _selectedPlayer == 'brendan',
+                                floatAnimation: _floatAnimation,
+                                onTap: () {
+                                  setState(() {
+                                    _selectedPlayer = 'brendan';
+                                  });
+                                },
+                              ),
+                              _PlayerCard(
+                                playerName: "MAY",
+                                imagePath: "assets/players/may_player.png",
+                                isSelected: _selectedPlayer == 'may',
+                                floatAnimation: _floatAnimation,
+                                onTap: () {
+                                  setState(() {
+                                    _selectedPlayer = 'may';
+                                  });
+                                },
                               ),
                             ],
                           ),
