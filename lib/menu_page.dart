@@ -128,7 +128,8 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                           context,
                           MaterialPageRoute(
                             builder: (context) => PlayerSelectPage(
-                              currentPlayer: _selectedPlayer,
+                                currentPlayer: _selectedPlayer,
+                                backgroundColor: const Color(0xFFEF9A9A)
                             ),
                           ),
                         );
