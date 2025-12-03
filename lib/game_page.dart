@@ -6,15 +6,17 @@ import '../models/obstacle_model.dart';
 import 'widgets/draggable_player_horizontal.dart';
 import 'widgets/draggable_player_vertical.dart';
 import 'widgets/infinite_scroll_map.dart';
-
+import 'services/supabase_service.dart';
 class GamePage extends StatefulWidget {
   final String playerName;
   final String selectedMap;
+  final String username;
 
   const GamePage({
     super.key,
     required this.playerName,
     required this.selectedMap,
+    required this.username,
   });
 
   @override
@@ -22,6 +24,7 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
+  final SupabaseService _supabaseService = SupabaseService();
   int _counter = 0;
   int _lives = 3;
   bool _isGameOver = false;
@@ -232,16 +235,100 @@ class _GamePageState extends State<GamePage> {
     }
   }
 
-  void _triggerGameOver() {
+  Future<void> _saveScoreLogic() async {
+    // 1. Obtener puntaje actual (si existe)
+    final currentScore = await _supabaseService.retrievePoints(playerName: widget.username);
+    
+    // 2. Si no tiene puntaje (null) O el nuevo (_counter) es mayor, guardamos
+    if (currentScore == null || _counter > currentScore) {
+       await _supabaseService.checkAndUpsertPlayer(
+         playerName: widget.username, 
+         score: _counter
+       );
+    }
+  }
+
+  Future<void> _triggerGameOver() async {
     setState(() {
       _isGameOver = true;
     });
+
+    // Se muestra un indicador de carga mientras se guardan/cargan los datos del jugador
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    int bestScore = 0;
+
+    try {
+      // Obtenemos el récord guardado en la nube
+      final int? savedScore = await _supabaseService.retrievePoints(
+        playerName: widget.username,
+      );
+      
+      // Si no había nada guardado, asumimos 0
+      bestScore = savedScore ?? 0;
+
+      // Verificamos si se rompió el mejor récord
+      if (_counter > bestScore) {
+        bestScore = _counter; // El nuevo récord es el actual
+        
+        // Guardar el nuevo récord en Supabase
+        await _supabaseService.checkAndUpsertPlayer(
+          playerName: widget.username,
+          score: _counter,
+        );
+      }
+    } catch (e) {
+      debugPrint("Error al conectar con BD: $e");
+      // Si falla la conexión a internet, se muestra el score actual como mejor score
+      if (_counter > bestScore) bestScore = _counter;
+    }
+
+    // Se cierra el indicador de carga (si el widget sigue vivo)
+    if (mounted) {
+      Navigator.pop(context); // Cierra el CircularProgressIndicator
+      
+      // Mostrar el diálogo final con los datos
+      _showGameOverDialog(bestScore); 
+    }
+  }
+
+  void _showGameOverDialog(int bestScore) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text("¡Game Over!"),
-        content: Text("Distancia recorrida: $_counter m"),
+        title: const Text(
+          "¡GAME OVER!",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Puntaje Actual
+            Text("Puntaje Actual", style: TextStyle(color: Colors.grey[600])),
+            Text(
+              "$_counter m",
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            
+            // Mejor Récord
+            Text("🏆 Mejor Récord 🏆", style: TextStyle(color: Colors.orange[800])),
+            Text(
+              "$bestScore m",
+              style: const TextStyle(
+                fontSize: 24, 
+                fontWeight: FontWeight.bold, 
+                color: Colors.orange,
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -252,8 +339,8 @@ class _GamePageState extends State<GamePage> {
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
+              Navigator.pop(context); // Cierra diálogo
+              Navigator.pop(context); // Sale al menú
             },
             child: const Text("Salir"),
           )

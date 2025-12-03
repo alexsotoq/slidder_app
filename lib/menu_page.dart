@@ -4,6 +4,7 @@ import 'game_page.dart';
 import 'player_select_page.dart';
 import 'map_select_page.dart';
 import 'credits_page.dart';
+import 'services/supabase_service.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -13,6 +14,9 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
+  final TextEditingController _userController = TextEditingController();
+// Instancia tu servicio
+final SupabaseService _supabaseService = SupabaseService();
   String _selectedPlayer = 'red';
   String _selectedMap = 'Parque';
   late AnimationController _floatController;
@@ -74,15 +78,43 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                       text: "JUGAR",
                       color: const Color(0xFFE8A87C),
                       darkColor: const Color(0xFFD38B5D),
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GamePage(
-                            playerName: _selectedPlayer,
-                            selectedMap: _selectedMap,
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => AlertDialog(
+                            title: const Text("Ingresa un username"),
+                            content: TextField(
+                              controller: _userController,
+                              decoration: const InputDecoration(hintText: "Ej. AshKetchum"),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () async {
+                                  if (_userController.text.isNotEmpty) {
+                                    final username = _userController.text.trim();
+                                    
+                                    if (context.mounted) {
+                                      Navigator.pop(context); 
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => GamePage(
+                                            playerName: _selectedPlayer,
+                                            selectedMap: _selectedMap,
+                                            username: username, // <--- Se pasa el username aquí
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: const Text("LISTO"),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 12),
