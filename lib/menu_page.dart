@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'game_page.dart';
 import 'player_select_page.dart';
+import 'map_select_page.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -10,6 +11,7 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
+  String _selectedMap = 'Mapa';
   String _selectedPlayer = 'red';
 
   // Animación del personaje
@@ -89,6 +91,7 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                         MaterialPageRoute(
                           builder: (context) => GamePage(
                             playerName: _selectedPlayer,
+                            selectedMap: _selectedMap,
                           ),
                         ),
                       );
@@ -111,6 +114,27 @@ class _MenuPageState extends State<MenuPage> with TickerProviderStateMixin {
                       if (result != null) {
                         setState(() {
                           _selectedPlayer = result;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _PixelArtButton(
+                    text: "ELEGIR MAPA",
+                    color: const Color(0xFF72E78B),
+                    darkColor: const Color(0xFF5DA35D),
+                    onPressed: () async {
+                      final result = await Navigator.push<String>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MapSelectPage(
+                            currentMap: _selectedMap,
+                          ),
+                        ),
+                      );
+                      if (result != null) {
+                        setState(() {
+                          _selectedMap = result;
                         });
                       }
                     },
