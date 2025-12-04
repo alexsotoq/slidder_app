@@ -1,102 +1,50 @@
-# slider_app
+<div align="center">
 
-A Flutter application with Supabase integration for player score tracking.
+# POKEMON RUNNER
 
-## 🔧 Configuración de Variables de Entorno
+[![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev/)
+[![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-181818?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.io/)
 
-Esta aplicación utiliza variables de entorno para gestionar configuraciones sensibles.
+</div>
 
-### Configuración Inicial
+Proyecto académico desarrollado para la materia Desarrollo de Aplicaciones Móviles (2025-2). **Pokémon Runner** es un *infinite runner* sencillo donde controlas a un entrenador Pokémon que debe esquivar obstáculos mientras avanza continuamente.
 
-1. Copia el archivo de ejemplo `.env.example` a `.env`:
-   ```bash
-   cp .env.example .env
-   ```
+<p align="center">
+   <img 
+      src="https://file.garden/aMJcLqSqrg21TY4d/pokemon_runner/ss_menu.png"
+      alt="Pokemon Runner"
+      style="width:100%; max-width:400px; height:auto;">
+</p>
 
-2. Edita el archivo `.env` con tus credenciales reales:
-   ```env
-   # Supabase Configuration
-   SUPABASE_URL=https://tu-proyecto.supabase.co
-   SUPABASE_ANON_KEY=tu_anon_key_aqui
-   
-   # Authentication
-   AUTH_EMAIL=tu_email@example.com
-   AUTH_PASSWORD=tu_password_aqui
-   ```
+## 🎮 De qué trata
 
-3. El archivo `.env` está en `.gitignore` y **NO debe** ser commiteado.
+El objetivo es llegar lo más lejos posible sin perder tus 3 vidas.
+* **Controles simples:** Arrastra al personaje para moverte.
+* **Orientación:** Puedes jugar en vertical o rotarlo a horizontal; el juego se adapta solo.
+* **Ranking:** Tu *score* se guarda en la nube.
 
-### Variables Disponibles
+## 📸 Capturas
 
-| Variable | Descripción |
-|----------|-------------|
-| `SUPABASE_URL` | URL de tu proyecto Supabase |
-| `SUPABASE_ANON_KEY` | Clave anónima pública de Supabase |
-| `AUTH_EMAIL` | Email para autenticación |
-| `AUTH_PASSWORD` | Contraseña para autenticación |
+| Vertical | Horizontal |
+|:---:|:---:|
+| ![Vertical](https://file.garden/aMJcLqSqrg21TY4d/pokemon_runner/ss_vertical.png) | ![Horizontal](https://file.garden/aMJcLqSqrg21TY4d/pokemon_runner/ss_horizontal.png) |
 
-## 🚀 Instalación y Ejecución
+| Mapas | Personajes |
+|:---:|:---:|
+| ![Mapas](https://file.garden/aMJcLqSqrg21TY4d/pokemon_runner/ss_mapas.png) | ![Personajes](https://file.garden/aMJcLqSqrg21TY4d/pokemon_runner/ss_personajes.png) |
 
-1. Instala las dependencias:
-   ```bash
-   flutter pub get
-   ```
+## 🛠️ Tecnologías
+* Construido con **Flutter** & **Dart**.
+* Backend potenciado por **Supabase**.
+* Gestión de entorno segura con `flutter_dotenv`.
 
-2. Configura tu archivo `.env` (ver arriba)
+## 👥 Créditos
 
-3. Ejecuta la aplicación:
-   ```bash
-   flutter run
-   ```
+**Equipo:**
+* Elda Berenice Matus Valencia
+* Adriana Leon Camacho
+* Alex Eduardo Soto Quiñonez
 
-## 🏗️ Arquitectura
-
-El proyecto sigue una arquitectura de servicios:
-
-```
-lib/
-├── main.dart                    # Punto de entrada, carga .env
-└── services/
-    └── supabase_service.dart   # Lógica de Supabase centralizada
-```
-
-### SupabaseService
-
-Todas las operaciones de Supabase están encapsuladas en `SupabaseService`:
-
-- `signIn()` - Autenticación
-- `insertPlayer()` - Insertar jugador
-- `updatePlayer()` - Actualizar puntos
-- `checkAndUpsertPlayer()` - Upsert inteligente
-- `retrievePoints()` - Obtener puntos
-
-## 🔒 Seguridad
-
-- **Nunca** compartas tu archivo `.env`
-- El archivo `.env` está en `.gitignore`
-- Usa `.env.example` como plantilla
-
-## 📦 Dependencias
-
-- `supabase_flutter: ^2.10.3` - Cliente de Supabase
-- `flutter_dotenv: ^5.1.0` - Gestión de variables de entorno
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-    
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
-## 🪪 Créditos
-
-- [Flutter](https://flutter.dev) - Framework para construir aplicaciones nativas
-- [Supabase](https://supabase.io) - Backend como servicio
-- [flutter_dotenv](https://pub.dev/packages/flutter_dotenv) - Gestión de variables de entorno
-- [freepngimg](https://freepngimg.com/png/148675-car-top-vector-view-free-hd-image) - Iconos de autos utilizados en la aplicación
+**Recursos:**
+* Todo el contenido multimedia (sprites, música, efectos de sonido e imágenes) pertenece a sus respectivos autores. Se utilizan en este proyecto únicamente con fines ilustrativos y académicos.
