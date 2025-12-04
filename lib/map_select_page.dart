@@ -1,40 +1,168 @@
 import 'package:flutter/material.dart';
+import 'global_background.dart';
 
-class MapSelectPage extends StatelessWidget {
+class MapSelectPage extends StatefulWidget {
   final String currentMap;
-  
-  const MapSelectPage({super.key, required this.currentMap});
+  final Color? backgroundColor;
+
+  const MapSelectPage({
+    super.key,
+    required this.currentMap,
+    this.backgroundColor,
+  });
+
+  @override
+  State<MapSelectPage> createState() => _MapSelectPageState();
+}
+
+class _MapSelectPageState extends State<MapSelectPage> with TickerProviderStateMixin {
+  late String _selectedMap;
+  late AnimationController _floatController;
+  late Animation<double> _floatAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedMap = widget.currentMap;
+
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+
+    _floatAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _floatController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Elige el mapa'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _MapCard(
-              mapName: 'Parque',
-              imagePath: 'assets/maps/mapa_parque_horizontal.png',
-              isSelected: currentMap == 'Parque',
-              onTap: () {
-                Navigator.pop(context, 'Parque');
-              },
-            ),
+      body: Stack(
+        children: [
+          // USA EL FONDO GLOBAL COMPARTIDO
+          const ScrollingBackground(),
 
-            _MapCard(
-              mapName: 'Ciudad',
-              imagePath: 'assets/maps/mapa_city_horizontal.png',
-              isSelected: currentMap == 'Ciudad',
-              onTap: () {
-                Navigator.pop(context, 'Ciudad');
-              },
+          SafeArea(
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _BackButton(
+                      onPressed: () => Navigator.pop(context, _selectedMap),
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Stack(
+                            children: [
+                              Positioned(
+                                top: 4,
+                                left: 4,
+                                child: Text(
+                                  "ELIGE EL",
+                                  style: const TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 28,
+                                    color: Colors.black,
+                                    height: 1,
+                                  ),
+                                ),
+                              ),
+                              const Text(
+                                "ELIGE EL",
+                                style: TextStyle(
+                                  fontFamily: 'PressStart2P',
+                                  fontSize: 28,
+                                  color: Color(0xFFFDD835),
+                                  height: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF81C784),
+                              border: Border.all(color: const Color(0xFF519657), width: 3),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              "MAPA",
+                              style: TextStyle(
+                                fontFamily: 'PressStart2P',
+                                fontSize: 14,
+                                color: Colors.white,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          // Mapas en columna para acomodar las imágenes horizontales
+                          Column(
+                            children: [
+                              _MapCard(
+                                mapName: "PARQUE",
+                                imagePath: "assets/maps/mapa_parque_horizontal.png",
+                                isSelected: _selectedMap == 'Parque',
+                                floatAnimation: _floatAnimation,
+                                onTap: () {
+                                  setState(() {
+                                    _selectedMap = 'Parque';
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 24),
+                              _MapCard(
+                                mapName: "CIUDAD",
+                                imagePath: "assets/maps/mapa_city_horizontal.png",
+                                isSelected: _selectedMap == 'Ciudad',
+                                floatAnimation: _floatAnimation,
+                                onTap: () {
+                                  setState(() {
+                                    _selectedMap = 'Ciudad';
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          _PixelButton(
+                            text: "CONFIRMAR",
+                            color: const Color(0xFF81C784),
+                            darkColor: const Color(0xFF519657),
+                            onPressed: () => Navigator.pop(context, _selectedMap),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -44,12 +172,14 @@ class _MapCard extends StatelessWidget {
   final String mapName;
   final String imagePath;
   final bool isSelected;
+  final Animation<double> floatAnimation;
   final VoidCallback onTap;
 
   const _MapCard({
     required this.mapName,
     required this.imagePath,
     required this.isSelected,
+    required this.floatAnimation,
     required this.onTap,
   });
 
@@ -57,36 +187,314 @@ class _MapCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: isSelected
-              ? Border.all(color: Colors.blue, width: 4)
-              : Border.all(color: Colors.grey.shade300, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+      child: AnimatedBuilder(
+        animation: floatAnimation,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, floatAnimation.value),
+            child: child,
+          );
+        },
+        child: Column(
+          children: [
+            // Contenedor horizontal para la imagen alargada del mapa
+            Container(
+              width: 320,
+              height: 140,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8E1),
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF81C784) : const Color(0xFFB7B7BD),
+                  width: isSelected ? 6 : 4,
+                ),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isSelected ? const Color(0xFF519657) : const Color(0xFF818185)).withOpacity(0.3),
+                    blurRadius: isSelected ? 15 : 10,
+                    spreadRadius: isSelected ? 3 : 2,
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Decoración de esquinas (igual que en los otros archivos)
+                  for (var i = 0; i < 4; i++)
+                    Positioned(
+                      top: i == 0 || i == 1 ? 8 : null,
+                      bottom: i == 2 || i == 3 ? 8 : null,
+                      left: i == 0 || i == 2 ? 8 : null,
+                      right: i == 1 || i == 3 ? 8 : null,
+                      child: Transform.rotate(
+                        angle: [0.0, 1.5708, 4.71239, 3.14159][i],
+                        child: CustomPaint(
+                          size: const Size(8, 8),
+                          painter: _CornerPainter(),
+                        ),
+                      ),
+                    ),
+                  // Imagen del mapa
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Image.asset(
+                        imagePath,
+                        fit: BoxFit.contain,
+                        filterQuality: FilterQuality.none,
+                      ),
+                    ),
+                  ),
+                  // Indicador de selección (checkmark)
+                  if (isSelected)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF81C784),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: const Color(0xFF519657), width: 2),
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Nombre del mapa
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF81C784) : const Color(0xFFB7B7BD),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF519657) : const Color(0xFF818185),
+                  width: 2,
+                ),
+              ),
+              child: Text(
+                mapName,
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 12,
+                  color: Colors.white,
+                  height: 1,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black45,
+                      offset: Offset(1, 1),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              imagePath,
-              height: 50,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              mapName.toUpperCase(),
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ],
+      ),
+    );
+  }
+}
+
+class _CornerPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFFFAB91)
+      ..strokeWidth = 5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(Offset.zero, Offset(size.width, 0), paint);
+    canvas.drawLine(Offset.zero, Offset(0, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _BackButton extends StatefulWidget {
+  final VoidCallback onPressed;
+
+  const _BackButton({required this.onPressed});
+
+  @override
+  State<_BackButton> createState() => _BackButtonState();
+}
+
+class _BackButtonState extends State<_BackButton> {
+  bool _isPressed = false;
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) {
+          setState(() => _isPressed = false);
+          widget.onPressed();
+        },
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: AnimatedScale(
+          scale: _isHovered && !_isPressed ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          child: Stack(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 100),
+                margin: EdgeInsets.only(
+                  top: _isPressed ? 3 : 0,
+                  left: _isPressed ? 3 : 0,
+                ),
+                decoration: BoxDecoration(
+                  color: _isHovered && !_isPressed
+                      ? Color.lerp(const Color(0xFF64B5F6), Colors.white, 0.15)
+                      : const Color(0xFF64B5F6),
+                  border: Border.all(color: const Color(0xFF2286C3), width: 3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  margin: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border(
+                      top: BorderSide(color: Colors.white.withOpacity(0.5), width: 1.5),
+                      left: BorderSide(color: Colors.white.withOpacity(0.5), width: 1.5),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "< VOLVER",
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 10,
+                          color: Colors.white,
+                          height: 1,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black45,
+                              offset: Offset(1, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PixelButton extends StatefulWidget {
+  final String text;
+  final Color color;
+  final Color darkColor;
+  final VoidCallback onPressed;
+
+  const _PixelButton({
+    required this.text,
+    required this.color,
+    required this.darkColor,
+    required this.onPressed,
+  });
+
+  @override
+  State<_PixelButton> createState() => _PixelButtonState();
+}
+
+class _PixelButtonState extends State<_PixelButton> {
+  bool _isPressed = false;
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) {
+          setState(() => _isPressed = false);
+          widget.onPressed();
+        },
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: AnimatedScale(
+          scale: _isHovered && !_isPressed ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          child: Stack(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 100),
+                width: 220,
+                height: 48,
+                margin: EdgeInsets.only(
+                  top: _isPressed ? 4 : 0,
+                  left: _isPressed ? 4 : 0,
+                ),
+                decoration: BoxDecoration(
+                  color: _isHovered && !_isPressed
+                      ? Color.lerp(widget.color, Colors.white, 0.15)
+                      : widget.color,
+                  border: Border.all(color: widget.darkColor, width: 3),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: _isHovered && !_isPressed
+                      ? [
+                    BoxShadow(
+                      color: widget.color.withOpacity(0.4),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    )
+                  ]
+                      : [],
+                ),
+                child: Container(
+                  margin: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border(
+                      top: BorderSide(color: Colors.white.withOpacity(0.5), width: 1.5),
+                      left: BorderSide(color: Colors.white.withOpacity(0.5), width: 1.5),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      widget.text,
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 12,
+                        color: Colors.white,
+                        height: 1,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black45,
+                            offset: Offset(1, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
