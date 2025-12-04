@@ -7,6 +7,7 @@ import 'widgets/draggable_player_horizontal.dart';
 import 'widgets/draggable_player_vertical.dart';
 import 'widgets/infinite_scroll_map.dart';
 import 'services/supabase_service.dart';
+
 class GamePage extends StatefulWidget {
   final String playerName;
   final String selectedMap;
@@ -17,7 +18,6 @@ class GamePage extends StatefulWidget {
     required this.playerName,
     required this.selectedMap,
     required this.username,
-
   });
 
   @override
@@ -45,34 +45,23 @@ class _GamePageState extends State<GamePage> {
     'assets/items/bush.png',
     'assets/pokemon/geodude.png',
   ];
-  
-  // CONFIGURACIÓN DE LÍMITES POR MAPA
-  // Como los mapas tienen diferentes tamaños, se ajustan los límites de movimiento y spawn según el mapa seleccionado
+
   Map<String, double> get mapConfig {
     if (widget.selectedMap == 'Parque') {
       return {
-        //Vertical
-        'player_min_x': -200.0, // Izquierda
-        'player_max_x': 150.0, // Derecha
-        
-        // Horizontal
-        'player_min_y': -130.0,  // Arriba
-        'player_max_y': 40.0,   // Abajo 
-
+        'player_min_x': -200.0,
+        'player_max_x': 150.0,
+        'player_min_y': -130.0,
+        'player_max_y': 40.0,
         'spawn_x_range': 100.0,
         'spawn_y_range': 45.0,
       };
     } else {
-      // CIUDAD
       return {
-        // Vertical
         'player_min_x': -300.0,
         'player_max_x': 194.0,
-
-        // Horizontal
-        'player_min_y': -120.0, // Arriba 
-        'player_max_y': 80.0,   // Abajo 
-
+        'player_min_y': -120.0,
+        'player_max_y': 80.0,
         'spawn_x_range': 170.0,
         'spawn_y_range': 145.0,
       };
@@ -85,12 +74,10 @@ class _GamePageState extends State<GamePage> {
     _initializeGame();
   }
 
-  
   Future<void> _initializeGame() async {
     await _musicPlayer.setReleaseMode(ReleaseMode.loop);
     await _musicPlayer.play(AssetSource('audio/music.mp3'));
     _musicPlayer.setVolume(0.5);
-
     _startGameLoop();
   }
 
@@ -110,7 +97,7 @@ class _GamePageState extends State<GamePage> {
 
   void _incrementCounter() {
     setState(() {
-      _counter++;      
+      _counter++;
       if (_counter % 500 == 0) _gameSpeed += 1.0;
     });
   }
@@ -133,55 +120,55 @@ class _GamePageState extends State<GamePage> {
       _spawnTimer++;
 
       if (_spawnTimer > 30) {
-        // 15% de probabilidad de llamar a la función de spawn de poción, para que la recuperación no sea tan común
         if (_random.nextInt(100) < 15) {
-           _spawnPotion(); 
+          _spawnPotion();
         } else {
-           // Si no, spawn de obstaculos normal
-           _spawnNewObstacle(); 
+          _spawnNewObstacle();
         }
         _spawnTimer = 0;
       }
-     
     });
   }
 
   void _spawnNewObstacle() {
     final sprite = _obstacleSprites[_random.nextInt(_obstacleSprites.length)];
     final size = MediaQuery.of(context).size;
-    final config = mapConfig; // Cargamos config
+    final config = mapConfig;
 
     if (_isVertical) {
-      // Usamos el rango de la configuración
-      double range = config['spawn_x_range']!; 
+      double range = config['spawn_x_range']!;
       double randomX = (_random.nextDouble() * (range * 2)) - range;
-      
-      _obstacles.add(Obstacle(
-        id: DateTime.now().toString(),
-        imagePath: sprite,
-        x: randomX,
-        y: -100,
-      ));
+
+      _obstacles.add(
+        Obstacle(
+          id: DateTime.now().toString(),
+          imagePath: sprite,
+          x: randomX,
+          y: -100,
+        ),
+      );
     } else {
       double range = config['spawn_y_range']!;
-      double randomY = (_random.nextDouble() * (range * 2)) - range; // Centrado en 0
-      
-      _obstacles.add(Obstacle(
-        id: DateTime.now().toString(),
-        imagePath: sprite,
-        x: size.width + 100,
-        y: randomY, 
-      ));
+      double randomY = (_random.nextDouble() * (range * 2)) - range;
+
+      _obstacles.add(
+        Obstacle(
+          id: DateTime.now().toString(),
+          imagePath: sprite,
+          x: size.width + 100,
+          y: randomY,
+        ),
+      );
     }
   }
 
   void _collectPotion(Obstacle potion) {
     _sfxPlayer.play(AssetSource('audio/potion.wav'));
     setState(() {
-      if (_lives < 3) { // Tope de 3 vidas
+      if (_lives < 3) {
         _lives++;
       }
-      _obstacles.remove(potion); // Importante: Borrarla al tocarla
+      _obstacles.remove(potion);
     });
   }
 
@@ -196,12 +183,14 @@ class _GamePageState extends State<GamePage> {
     if (_isVertical) {
       playerRect = Rect.fromCenter(
         center: Offset(centerX + _playerPosition, screenSize.height - 150),
-        width: 40, height: 40,
+        width: 40,
+        height: 40,
       );
     } else {
       playerRect = Rect.fromCenter(
         center: Offset(80, centerY + _playerPosition),
-        width: 40, height: 40,
+        width: 40,
+        height: 40,
       );
     }
 
@@ -210,24 +199,24 @@ class _GamePageState extends State<GamePage> {
       if (_isVertical) {
         obstacleRect = Rect.fromCenter(
           center: Offset(centerX + obstacle.x, obstacle.y),
-          width: obstacle.width * 0.7, height: obstacle.height * 0.7,
+          width: obstacle.width * 0.7,
+          height: obstacle.height * 0.7,
         );
       } else {
         obstacleRect = Rect.fromCenter(
           center: Offset(obstacle.x, centerY + obstacle.y),
-          width: obstacle.width * 0.7, height: obstacle.height * 0.7,
+          width: obstacle.width * 0.7,
+          height: obstacle.height * 0.7,
         );
       }
 
       if (playerRect.overlaps(obstacleRect)) {
-        // Si el archivo de imagen dice "potion", es curativa
         if (obstacle.imagePath.contains('potion')) {
           _collectPotion(obstacle);
         } else {
-          // Si no, es daño normal
           _handleHit();
         }
-        break; 
+        break;
       }
     }
   }
@@ -237,10 +226,10 @@ class _GamePageState extends State<GamePage> {
 
     setState(() {
       _lives--;
-      
+
       if (_lives <= 0) {
         _triggerGameOver();
-      } else {        
+      } else {
         _isInvincible = true;
         Timer(const Duration(seconds: 2), () {
           if (mounted) {
@@ -260,33 +249,37 @@ class _GamePageState extends State<GamePage> {
     if (_isVertical) {
       double range = config['spawn_x_range']!;
       double randomX = (_random.nextDouble() * (range * 2)) - range;
-      _obstacles.add(Obstacle(
-        id: DateTime.now().toString(),
-        imagePath: 'assets/items/potion.png', 
-        x: randomX,
-        y: -100,
-      ));
+      _obstacles.add(
+        Obstacle(
+          id: DateTime.now().toString(),
+          imagePath: 'assets/items/potion.png',
+          x: randomX,
+          y: -100,
+        ),
+      );
     } else {
       double randomY = (_random.nextDouble() * 400) - 200;
-      _obstacles.add(Obstacle(
-        id: DateTime.now().toString(),
-        imagePath: 'assets/items/potion.png', // La poción curativa
-        x: size.width + 100,
-        y: randomY,
-      ));
+      _obstacles.add(
+        Obstacle(
+          id: DateTime.now().toString(),
+          imagePath: 'assets/items/potion.png',
+          x: size.width + 100,
+          y: randomY,
+        ),
+      );
     }
   }
 
   Future<void> _saveScoreLogic() async {
-    // 1. Obtener puntaje actual (si existe)
-    final currentScore = await _supabaseService.retrievePoints(playerName: widget.username);
-    
-    // 2. Si no tiene puntaje (null) O el nuevo (_counter) es mayor, guardamos
+    final currentScore = await _supabaseService.retrievePoints(
+      playerName: widget.username,
+    );
+
     if (currentScore == null || _counter > currentScore) {
-       await _supabaseService.checkAndUpsertPlayer(
-         playerName: widget.username, 
-         score: _counter
-       );
+      await _supabaseService.checkAndUpsertPlayer(
+        playerName: widget.username,
+        score: _counter,
+      );
     }
   }
 
@@ -295,7 +288,6 @@ class _GamePageState extends State<GamePage> {
       _isGameOver = true;
     });
 
-    // Se muestra un indicador de carga mientras se guardan/cargan los datos del jugador
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -305,19 +297,15 @@ class _GamePageState extends State<GamePage> {
     int bestScore = 0;
 
     try {
-      // Obtenemos el récord guardado en la nube
       final int? savedScore = await _supabaseService.retrievePoints(
         playerName: widget.username,
       );
-      
-      // Si no había nada guardado, asumimos 0
+
       bestScore = savedScore ?? 0;
 
-      // Verificamos si se rompió el mejor récord
       if (_counter > bestScore) {
-        bestScore = _counter; // El nuevo récord es el actual
-        
-        // Guardar el nuevo récord en Supabase
+        bestScore = _counter;
+
         await _supabaseService.checkAndUpsertPlayer(
           playerName: widget.username,
           score: _counter,
@@ -325,16 +313,12 @@ class _GamePageState extends State<GamePage> {
       }
     } catch (e) {
       debugPrint("Error al conectar con BD: $e");
-      // Si falla la conexión a internet, se muestra el score actual como mejor score
       if (_counter > bestScore) bestScore = _counter;
     }
 
-    // Se cierra el indicador de carga (si el widget sigue vivo)
     if (mounted) {
-      Navigator.pop(context); // Cierra el CircularProgressIndicator
-      
-      // Mostrar el diálogo final con los datos
-      _showGameOverDialog(bestScore); 
+      Navigator.pop(context);
+      _showGameOverDialog(bestScore);
     }
   }
 
@@ -351,21 +335,22 @@ class _GamePageState extends State<GamePage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Puntaje Actual
             Text("Puntaje Actual", style: TextStyle(color: Colors.grey[600])),
             Text(
               "$_counter m",
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            
-            // Mejor Récord
-            Text("🏆 Mejor Récord 🏆", style: TextStyle(color: Colors.orange[800])),
+
+            Text(
+              "🏆 Mejor Récord 🏆",
+              style: TextStyle(color: Colors.orange[800]),
+            ),
             Text(
               "$bestScore m",
               style: const TextStyle(
-                fontSize: 24, 
-                fontWeight: FontWeight.bold, 
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
                 color: Colors.orange,
               ),
             ),
@@ -381,11 +366,11 @@ class _GamePageState extends State<GamePage> {
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Cierra diálogo
-              Navigator.pop(context); // Sale al menú
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             child: const Text("Salir"),
-          )
+          ),
         ],
       ),
     );
@@ -415,62 +400,90 @@ class _GamePageState extends State<GamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.playerName.toUpperCase()} Runner'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          IconButton(
-            icon: Icon(_isVertical ? Icons.swap_horiz : Icons.swap_vert),
-            onPressed: () {
-               setState(() {
-                 _isVertical = !_isVertical;
-                 _obstacles.clear();
-                 _playerPosition = 0;
-               });
-            },
+      body: Stack(
+        children: [
+          Center(
+            child: _isVertical
+                ? _buildVerticalLayout()
+                : _buildHorizontalLayout(),
+          ),
+
+          // Barra superior con TODOS los controles en una sola fila
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Botón Volver
+                    _BackButton(onPressed: () => Navigator.pop(context)),
+
+                    // HUD de distancia y vidas en el centro
+                    _buildHUD(),
+
+                    // Botón Cambiar Orientación
+                    _OrientationButton(
+                      isVertical: _isVertical,
+                      onPressed: () {
+                        setState(() {
+                          _isVertical = !_isVertical;
+                          _obstacles.clear();
+                          _playerPosition = 0;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
-      ),
-      body: Center(
-        child: _isVertical ? _buildVerticalLayout() : _buildHorizontalLayout(),
       ),
     );
   }
 
-Widget _buildPlayerWidget() {
-    final config = mapConfig; // Obtenemos la config actual
+  Widget _buildPlayerWidget() {
+    final config = mapConfig;
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 100),
       opacity: _isInvincible ? 0.5 : 1.0,
-      child: _isVertical 
-        ? DraggablePlayerHorizontal( // Jugador se mueve izq/der en modo vertical
-            imagePathBase: 'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_vertical',
-            frameCount: 3, width: 80, height: 80,
-            onPositionChanged: (val) => _playerPosition = val,
-            // LÍMITES
-            minX: config['player_min_x']!,
-            maxX: config['player_max_x']!,
-          )
-        : DraggablePlayerVertical( // Jugador se mueve arriba/abajo en modo horizontal
-            imagePathBase: 'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_lateral',
-            frameCount: 3, width: 80, height: 80,
-            onPositionChanged: (val) => _playerPosition = val,
-            // LÍMITES
-            minY: config['player_min_y']!, // Límite Arriba
-            maxY: config['player_max_y']!, // Límite Abajo
-          ),
+      child: _isVertical
+          ? DraggablePlayerHorizontal(
+        imagePathBase:
+        'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_vertical',
+        frameCount: 3,
+        width: 80,
+        height: 80,
+        onPositionChanged: (val) => _playerPosition = val,
+        minX: config['player_min_x']!,
+        maxX: config['player_max_x']!,
+      )
+          : DraggablePlayerVertical(
+        imagePathBase:
+        'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_lateral',
+        frameCount: 3,
+        width: 80,
+        height: 80,
+        onPositionChanged: (val) => _playerPosition = val,
+        minY: config['player_min_y']!,
+        maxY: config['player_max_y']!,
+      ),
     );
   }
 
   Widget _buildVerticalLayout() {
     final screenSize = MediaQuery.of(context).size;
     String mapImage;
-  if (widget.selectedMap == 'Parque') { //Si el mapa seleccionado es Parque, usar la imagen correspondiente
-    mapImage = 'assets/maps/mapa_parque_vertical.png';
-  } else { //Si no, usar la imagen de Ciudad
-    mapImage = 'assets/maps/mapa_city_vertical.png'; 
-  }
+    if (widget.selectedMap == 'Parque') {
+      mapImage = 'assets/maps/mapa_parque_vertical.png';
+    } else {
+      mapImage = 'assets/maps/mapa_city_vertical.png';
+    }
     return InfiniteScrollMap(
       imagePath: mapImage,
       scrollDirection: Axis.vertical,
@@ -478,11 +491,18 @@ Widget _buildPlayerWidget() {
       reverse: true,
       child: Stack(
         children: [
-          ..._obstacles.map((obstacle) => Positioned(
+          ..._obstacles.map(
+                (obstacle) => Positioned(
               left: (screenSize.width / 2) + obstacle.x - (obstacle.width / 2),
               top: obstacle.y - (obstacle.height / 2),
-              child: Image.asset(obstacle.imagePath, width: obstacle.width, height: obstacle.height, fit: BoxFit.contain),
-          )),
+              child: Image.asset(
+                obstacle.imagePath,
+                width: obstacle.width,
+                height: obstacle.height,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
@@ -490,7 +510,6 @@ Widget _buildPlayerWidget() {
               child: _buildPlayerWidget(),
             ),
           ),
-          _buildHUD(),
         ],
       ),
     );
@@ -499,11 +518,11 @@ Widget _buildPlayerWidget() {
   Widget _buildHorizontalLayout() {
     final screenSize = MediaQuery.of(context).size;
     String mapImage;
-  if (widget.selectedMap == 'Parque') { //Si el mapa seleccionado es Parque, usar la imagen correspondiente
-    mapImage = 'assets/maps/mapa_parque_horizontal.png';
-  } else { //Si no, usar la imagen de Ciudad
-    mapImage = 'assets/maps/mapa_city_horizontal.png';
-  }
+    if (widget.selectedMap == 'Parque') {
+      mapImage = 'assets/maps/mapa_parque_horizontal.png';
+    } else {
+      mapImage = 'assets/maps/mapa_city_horizontal.png';
+    }
     return InfiniteScrollMap(
       imagePath: mapImage,
       scrollDirection: Axis.horizontal,
@@ -511,11 +530,18 @@ Widget _buildPlayerWidget() {
       reverse: false,
       child: Stack(
         children: [
-          ..._obstacles.map((obstacle) => Positioned(
+          ..._obstacles.map(
+                (obstacle) => Positioned(
               left: obstacle.x - (obstacle.width / 2),
               top: (screenSize.height / 2) + obstacle.y - (obstacle.height / 2),
-              child: Image.asset(obstacle.imagePath, width: obstacle.width, height: obstacle.height, fit: BoxFit.contain),
-          )),
+              child: Image.asset(
+                obstacle.imagePath,
+                width: obstacle.width,
+                height: obstacle.height,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
           Align(
             alignment: Alignment.centerLeft,
             child: Padding(
@@ -523,53 +549,268 @@ Widget _buildPlayerWidget() {
               child: _buildPlayerWidget(),
             ),
           ),
-          _buildHUD(),
         ],
       ),
     );
   }
 
+  Widget _buildHUD() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2C2C2C),
+          border: Border.all(color: const Color(0xFFFDD835), width: 3),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Distancia
+            Text(
+              '$_counter M',
+              style: const TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 14,
+                color: Color(0xFFFDD835),
+                height: 1,
+              ),
+            ),
 
-//Vidas del jugador 
-Widget _buildHUD() {
-    return Positioned(
-      top: 20,
-      right: 20,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(8)),
-            child: Text('Distancia: $_counter m',
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: List.generate(3, (index) {
-              // Calculamos si esta vida está activa
-              bool isLifeActive = index < _lives;
+            const SizedBox(width: 16),
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2.0), //Espacio entre pokebolas
-                child: Opacity(
-                  // Si la vida está activa, opacidad 1.0 (full color)
-                  // Si la vida se perdió, opacidad 0.4 (semi-transparente)
-                  opacity: isLifeActive ? 1.0 : 0.4, 
-                  child: Image.asset(
-                    'assets/items/pokeball.png',
-                    width: 30, 
-                    height: 30,
-                  ),
+            // Separador vertical
+            Container(
+              width: 2,
+              height: 24,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.white.withOpacity(0.5),
+                    Colors.transparent,
+                  ],
                 ),
-              );
-            }),
-          )
-        ],
+              ),
+            ),
+
+            const SizedBox(width: 16),
+
+            // Vidas - Pokébolas
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(3, (index) {
+                bool isLifeActive = index < _lives;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                  child: Opacity(
+                    opacity: isLifeActive ? 1.0 : 0.25,
+                    child: Image.asset(
+                      'assets/items/pokeball.png',
+                      width: 22,
+                      height: 22,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
+  }
 }
+
+// Botón Volver estilizado
+class _BackButton extends StatefulWidget {
+  final VoidCallback onPressed;
+
+  const _BackButton({required this.onPressed});
+
+  @override
+  State<_BackButton> createState() => _BackButtonState();
+}
+
+class _BackButtonState extends State<_BackButton> {
+  bool _isPressed = false;
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) {
+          setState(() => _isPressed = false);
+          widget.onPressed();
+        },
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: AnimatedScale(
+          scale: _isHovered && !_isPressed ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 100),
+            margin: EdgeInsets.only(
+              top: _isPressed ? 3 : 0,
+              left: _isPressed ? 3 : 0,
+            ),
+            decoration: BoxDecoration(
+              color: _isHovered && !_isPressed
+                  ? Color.lerp(const Color(0xFF64B5F6), Colors.white, 0.15)
+                  : const Color(0xFF64B5F6),
+              border: Border.all(color: const Color(0xFF2286C3), width: 3),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              margin: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                  left: BorderSide(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              child: Text(
+                "< VOLVER",
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 9,
+                  color: Colors.white,
+                  height: 1,
+                  shadows: [
+                    Shadow(color: Colors.black45, offset: Offset(1, 1)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Botón de orientación estilizado
+class _OrientationButton extends StatefulWidget {
+  final bool isVertical;
+  final VoidCallback onPressed;
+
+  const _OrientationButton({required this.isVertical, required this.onPressed});
+
+  @override
+  State<_OrientationButton> createState() => _OrientationButtonState();
+}
+
+class _OrientationButtonState extends State<_OrientationButton> {
+  bool _isPressed = false;
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) {
+          setState(() => _isPressed = false);
+          widget.onPressed();
+        },
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: AnimatedScale(
+          scale: _isHovered && !_isPressed ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 100),
+            margin: EdgeInsets.only(
+              top: _isPressed ? 3 : 0,
+              left: _isPressed ? 3 : 0,
+            ),
+            decoration: BoxDecoration(
+              color: _isHovered && !_isPressed
+                  ? Color.lerp(const Color(0xFFE8A87C), Colors.white, 0.15)
+                  : const Color(0xFFE8A87C),
+              border: Border.all(color: const Color(0xFFD38B5D), width: 3),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              margin: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                  left: BorderSide(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    widget.isVertical ? Icons.swap_horiz : Icons.swap_vert,
+                    color: Colors.white,
+                    size: 16,
+                    shadows: const [
+                      Shadow(color: Colors.black45, offset: Offset(1, 1)),
+                    ],
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    "GIRAR",
+                    style: const TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 8,
+                      color: Colors.white,
+                      height: 1,
+                      shadows: [
+                        Shadow(color: Colors.black45, offset: Offset(1, 1)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
