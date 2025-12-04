@@ -7,6 +7,8 @@ class DraggablePlayerVertical extends StatefulWidget {
   final double width;
   final double height;
   final Function(double) onPositionChanged;
+  final double minY; // Límite ARRIBA (Negativo)
+  final double maxY;
 
   const DraggablePlayerVertical({
     super.key,
@@ -15,6 +17,8 @@ class DraggablePlayerVertical extends StatefulWidget {
     this.frameCount = 3,
     this.width = 80,
     this.height = 100,
+    required this.minY,
+    required this.maxY,
   });
 
   @override
@@ -56,15 +60,14 @@ class _DraggablePlayerVerticalState extends State<DraggablePlayerVertical> {
       builder: (context, constraints) {
         final maxHeight = constraints.maxHeight;
         final playerHalfHeight = widget.height / 2;
-        final minY = -maxHeight / 2 + playerHalfHeight;
-        final maxY = maxHeight / 2 - playerHalfHeight;
+        final screenMinY = -maxHeight / 2 + playerHalfHeight;
+        final screenMaxY = maxHeight / 2 - playerHalfHeight;
 
         return GestureDetector(
           onPanUpdate: (details) {
             setState(() {
               _yPosition += details.delta.dy;
-              double roadLimit = 75.0;
-              _yPosition = _yPosition.clamp(-roadLimit, roadLimit);
+              _yPosition = _yPosition.clamp(widget.minY, widget.maxY);
             });
             widget.onPositionChanged(_yPosition);
           },

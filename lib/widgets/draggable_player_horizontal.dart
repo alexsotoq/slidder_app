@@ -7,6 +7,8 @@ class DraggablePlayerHorizontal extends StatefulWidget {
   final double width;
   final double height;
   final Function(double) onPositionChanged;
+  final double minX;
+  final double maxX;
 
   const DraggablePlayerHorizontal({
     super.key,
@@ -15,6 +17,8 @@ class DraggablePlayerHorizontal extends StatefulWidget {
     this.frameCount = 3,
     this.width = 80,
     this.height = 100,
+    required this.minX,
+    required this.maxX,
   });
 
   @override
@@ -63,9 +67,7 @@ class _DraggablePlayerHorizontalState extends State<DraggablePlayerHorizontal> {
           onPanUpdate: (details) {
             setState(() {
               _xPosition += details.delta.dx;
-              double limiteIzquierdo = -340.0; 
-              double limiteDerecho = 320.0;   
-              _xPosition = _xPosition.clamp(limiteIzquierdo, limiteDerecho);
+              _xPosition = _xPosition.clamp(widget.minX, widget.maxX);
             });
             widget.onPositionChanged(_xPosition); 
           },

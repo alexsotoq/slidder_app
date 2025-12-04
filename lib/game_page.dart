@@ -17,6 +17,7 @@ class GamePage extends StatefulWidget {
     required this.playerName,
     required this.selectedMap,
     required this.username,
+
   });
 
   @override
@@ -39,12 +40,44 @@ class _GamePageState extends State<GamePage> {
   int _spawnTimer = 0;
   final AudioPlayer _musicPlayer = AudioPlayer();
   final AudioPlayer _sfxPlayer = AudioPlayer();
-
   final List<String> _obstacleSprites = [
     'assets/items/rock.png',
     'assets/items/bush.png',
     'assets/pokemon/geodude.png',
   ];
+  
+  // CONFIGURACIÓN DE LÍMITES POR MAPA
+  // Como los mapas tienen diferentes tamaños, se ajustan los límites de movimiento y spawn según el mapa seleccionado
+  Map<String, double> get mapConfig {
+    if (widget.selectedMap == 'Parque') {
+      return {
+        //Vertical
+        'player_min_x': -200.0, // Izquierda
+        'player_max_x': 150.0, // Derecha
+        
+        // Horizontal
+        'player_min_y': -130.0,  // Arriba
+        'player_max_y': 40.0,   // Abajo 
+
+        'spawn_x_range': 100.0,
+        'spawn_y_range': 45.0,
+      };
+    } else {
+      // CIUDAD
+      return {
+        // Vertical
+        'player_min_x': -300.0,
+        'player_max_x': 194.0,
+
+        // Horizontal
+        'player_min_y': -120.0, // Arriba 
+        'player_max_y': 80.0,   // Abajo 
+
+        'spawn_x_range': 170.0,
+        'spawn_y_range': 145.0,
+      };
+    }
+  }
 
   @override
   void initState() {
@@ -52,6 +85,7 @@ class _GamePageState extends State<GamePage> {
     _initializeGame();
   }
 
+  
   Future<void> _initializeGame() async {
     await _musicPlayer.setReleaseMode(ReleaseMode.loop);
     await _musicPlayer.play(AssetSource('audio/music.mp3'));
@@ -115,9 +149,13 @@ class _GamePageState extends State<GamePage> {
   void _spawnNewObstacle() {
     final sprite = _obstacleSprites[_random.nextInt(_obstacleSprites.length)];
     final size = MediaQuery.of(context).size;
+    final config = mapConfig; // Cargamos config
 
     if (_isVertical) {
-      double randomX = (_random.nextDouble() * 300) - 150;
+      // Usamos el rango de la configuración
+      double range = config['spawn_x_range']!; 
+      double randomX = (_random.nextDouble() * (range * 2)) - range;
+      
       _obstacles.add(Obstacle(
         id: DateTime.now().toString(),
         imagePath: sprite,
@@ -125,12 +163,14 @@ class _GamePageState extends State<GamePage> {
         y: -100,
       ));
     } else {
-      double randomY = (_random.nextDouble() * 400) - 200;
+      double range = config['spawn_y_range']!;
+      double randomY = (_random.nextDouble() * (range * 2)) - range; // Centrado en 0
+      
       _obstacles.add(Obstacle(
         id: DateTime.now().toString(),
         imagePath: sprite,
         x: size.width + 100,
-        y: randomY,
+        y: randomY, 
       ));
     }
   }
@@ -215,9 +255,11 @@ class _GamePageState extends State<GamePage> {
 
   void _spawnPotion() {
     final size = MediaQuery.of(context).size;
-    // Lógica para que aparezca en la posición correcta según la orientación
+    final config = mapConfig;
+
     if (_isVertical) {
-      double randomX = (_random.nextDouble() * 300) - 150;
+      double range = config['spawn_x_range']!;
+      double randomX = (_random.nextDouble() * (range * 2)) - range;
       _obstacles.add(Obstacle(
         id: DateTime.now().toString(),
         imagePath: 'assets/items/potion.png', 
@@ -395,20 +437,28 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  Widget _buildPlayerWidget() {    
+Widget _buildPlayerWidget() {
+    final config = mapConfig; // Obtenemos la config actual
+
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 100),
       opacity: _isInvincible ? 0.5 : 1.0,
       child: _isVertical 
-        ? DraggablePlayerHorizontal(
+        ? DraggablePlayerHorizontal( // Jugador se mueve izq/der en modo vertical
             imagePathBase: 'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_vertical',
             frameCount: 3, width: 80, height: 80,
             onPositionChanged: (val) => _playerPosition = val,
+            // LÍMITES
+            minX: config['player_min_x']!,
+            maxX: config['player_max_x']!,
           )
-        : DraggablePlayerVertical(
+        : DraggablePlayerVertical( // Jugador se mueve arriba/abajo en modo horizontal
             imagePathBase: 'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_lateral',
             frameCount: 3, width: 80, height: 80,
             onPositionChanged: (val) => _playerPosition = val,
+            // LÍMITES
+            minY: config['player_min_y']!, // Límite Arriba
+            maxY: config['player_max_y']!, // Límite Abajo
           ),
     );
   }

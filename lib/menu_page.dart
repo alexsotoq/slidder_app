@@ -293,7 +293,7 @@ final SupabaseService _supabaseService = SupabaseService();
                     child: Image.asset(
                       _selectedPlayer == 'red' ? 'assets/players/red_player.png' :
                       _selectedPlayer == 'green' ? 'assets/players/player_green.png' :
-                      _selectedPlayer == 'brandon' ? 'assets/players/brandon_player.png' :
+                      _selectedPlayer == 'brendan' ? 'assets/players/brendan_player.png' :
                       'assets/players/may_player.png',
 
                       height: 120,
