@@ -24,6 +24,19 @@ class SupabaseService {
   /// Stream que emite cambios en el estado de autenticación.
   Stream<AuthState> get onAuthStateChange => _client.auth.onAuthStateChange;
 
+  // --- NUEVO ---
+  Future<void> _ensureAuth() async {
+    final session = _client.auth.currentSession;
+    if (session == null) {
+      debugPrint('⚠️ No hay sesión. Autenticando...');
+      final email = dotenv.env['AUTH_EMAIL'];
+      final password = dotenv.env['AUTH_PASSWORD'];
+      if (email != null && password != null) {
+        await signIn(email: email, password: password);
+      }
+    }
+  }
+
   // ============================================================================
   // AUTENTICACIÓN
   // ============================================================================
@@ -130,23 +143,33 @@ class SupabaseService {
     required String playerName,
     required int points,
   }) async {
+    // 1. Aseguramos login antes de nada
+    await _ensureAuth();
+
     try {
+      // Definimos los datos a actualizar
       final updatedData = {
-        'player_name': playerName,
         'points': points,
         'updated_at': DateTime.now().toIso8601String(),
       };
 
-      await _client
+      // 2. Ejecutamos el update y usamos .select() para confirmar
+      // Guardamos la respuesta en una variable para verificar si funcionó
+      final response = await _client
           .from('players')
           .update(updatedData)
-          .eq('player_name', playerName);
+          .eq('player_name', playerName)
+          .select(); 
 
-      debugPrint('✅ Jugador con nombre $playerName actualizado exitosamente.');
-    } on PostgrestException catch (error) {
-      debugPrint('❌ Error al actualizar jugador: ${error.message}');
+      // Verificamos si la lista de respuesta está vacía (significa que no encontró al jugador para actualizar)
+      if (response.isEmpty) {
+        debugPrint('⚠️ ALERTA: La actualización se ejecutó pero no modificó nada. Revisa permisos RLS o el nombre exacto.');
+      } else {
+        debugPrint('✅ Jugador $playerName actualizado correctamente en la Nube.');
+      }
+
     } catch (error) {
-      debugPrint('❌ Error inesperado al actualizar: $error');
+      debugPrint('❌ Error update: $error');
     }
   }
 
