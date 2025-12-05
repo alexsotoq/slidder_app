@@ -82,36 +82,125 @@ final SupabaseService _supabaseService = SupabaseService();
                         showDialog(
                           context: context,
                           barrierDismissible: false,
-                          builder: (context) => AlertDialog(
-                            title: const Text("Ingresa un username"),
-                            content: TextField(
-                              controller: _userController,
-                              decoration: const InputDecoration(hintText: "Ej. AshKetchum"),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () async {
-                                  if (_userController.text.isNotEmpty) {
-                                    final username = _userController.text.trim();
-                                    
-                                    if (context.mounted) {
-                                      Navigator.pop(context); 
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => GamePage(
-                                            playerName: _selectedPlayer,
-                                            selectedMap: _selectedMap,
-                                            username: username, // <--- Se pasa el username aquí
+                          builder: (context) => Dialog(
+                            backgroundColor: Colors.transparent,
+                            child: Container(
+                              width: 300,
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF8E1), // Crema
+                                border: Border.all(color: const Color(0xFFD38B5D), width: 4),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(4, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Center(
+                                    child: Text(
+                                      "INGRESA TU USERNAME",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontFamily: 'PressStart2P',
+                                        fontSize: 14,
+                                        color: Color(0xFFD38B5D),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  
+                                  // TextField personalizado Pixel Art
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      border: Border.all(color: Colors.black26, width: 2),
+                                    ),
+                                    child: TextField(
+                                      controller: _userController,
+                                      style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
+                                      decoration: const InputDecoration(
+                                        hintText: "Ej. ASH_KETCHUM",
+                                        hintStyle: TextStyle(fontFamily: 'PressStart2P', fontSize: 10, color: Colors.grey),
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  const Text(
+                                    "Si no cuentas con un username, ingresa uno y se creará automáticamente.",
+                                    style: TextStyle(
+                                      fontFamily: 'PressStart2P',
+                                      fontSize: 8,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  
+                                  const SizedBox(height: 25),
+                                  
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: Text(
+                                          "CANCELAR",
+                                          style: TextStyle(
+                                            fontFamily: 'PressStart2P',
+                                            fontSize: 10,
+                                            color: Colors.red[400],
                                           ),
                                         ),
-                                      );
-                                    }
-                                  }
-                                },
-                                child: const Text("LISTO"),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          if (_userController.text.isNotEmpty) {
+                                            final username = _userController.text.trim();
+                                            if (context.mounted) {
+                                              Navigator.pop(context);
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => GamePage(
+                                                    playerName: _selectedPlayer,
+                                                    selectedMap: _selectedMap,
+                                                    username: username,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF64B5F6), // Azul Pokémon
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(4),
+                                            side: const BorderSide(color: Color(0xFF1976D2), width: 2),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          "¡VAMOS!",
+                                          style: TextStyle(
+                                            fontFamily: 'PressStart2P',
+                                            fontSize: 10,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         );
                       },

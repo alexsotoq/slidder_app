@@ -7,7 +7,7 @@ class DraggablePlayerVertical extends StatefulWidget {
   final double width;
   final double height;
   final Function(double) onPositionChanged;
-  final double minY; // Límite ARRIBA (Negativo)
+  final double minY; 
   final double maxY;
 
   const DraggablePlayerVertical({
@@ -22,10 +22,13 @@ class DraggablePlayerVertical extends StatefulWidget {
   });
 
   @override
-  State<DraggablePlayerVertical> createState() => _DraggablePlayerVerticalState();
+  // CAMBIO 1: El tipo de retorno y la creación del estado ya NO tienen el guion bajo "_"
+  State<DraggablePlayerVertical> createState() => DraggablePlayerVerticalState();
 }
 
-class _DraggablePlayerVerticalState extends State<DraggablePlayerVertical> {
+// CAMBIO 2: La clase ahora se llama "DraggablePlayerVerticalState" (sin "_")
+// Esto permite acceder a ella desde GamePage usando una GlobalKey.
+class DraggablePlayerVerticalState extends State<DraggablePlayerVertical> {
   double _yPosition = 0.0;
   Timer? _animationTimer;
   int _currentFrame = 0;
@@ -52,6 +55,17 @@ class _DraggablePlayerVerticalState extends State<DraggablePlayerVertical> {
     });
   }
 
+  // CAMBIO 3: Función nueva para mover al jugador desde el teclado
+  void movePlayer(double delta) {
+    setState(() {
+      _yPosition += delta;
+      // Respetamos los mismos límites que el arrastre táctil
+      _yPosition = _yPosition.clamp(widget.minY, widget.maxY);
+    });
+    // Avisamos a la página principal que nos movimos
+    widget.onPositionChanged(_yPosition);
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentImagePath = '${widget.imagePathBase}_$_currentFrame.png';
@@ -59,10 +73,10 @@ class _DraggablePlayerVerticalState extends State<DraggablePlayerVertical> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxHeight = constraints.maxHeight;
-        final playerHalfHeight = widget.height / 2;
-        final screenMinY = -maxHeight / 2 + playerHalfHeight;
-        final screenMaxY = maxHeight / 2 - playerHalfHeight;
-
+        
+        // No es necesario recalcular límites aquí para el clamp, ya los recibimos en el widget,
+        // pero sí para el Layout visual si fuera necesario.
+        
         return GestureDetector(
           onPanUpdate: (details) {
             setState(() {

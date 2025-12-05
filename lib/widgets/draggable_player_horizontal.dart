@@ -22,10 +22,12 @@ class DraggablePlayerHorizontal extends StatefulWidget {
   });
 
   @override
-  State<DraggablePlayerHorizontal> createState() => _DraggablePlayerHorizontalState();
+  // CAMBIO 1: Quitamos el guion bajo aquí
+  State<DraggablePlayerHorizontal> createState() => DraggablePlayerHorizontalState();
 }
 
-class _DraggablePlayerHorizontalState extends State<DraggablePlayerHorizontal> {
+// CAMBIO 2: Clase pública (sin guion bajo al inicio)
+class DraggablePlayerHorizontalState extends State<DraggablePlayerHorizontal> {
   double _xPosition = 0.0;
   Timer? _animationTimer;
   int _currentFrame = 0;
@@ -52,6 +54,15 @@ class _DraggablePlayerHorizontalState extends State<DraggablePlayerHorizontal> {
     });
   }
 
+  // CAMBIO 3: Función para mover con teclado (Izquierda/Derecha)
+  void movePlayer(double delta) {
+    setState(() {
+      _xPosition += delta;
+      _xPosition = _xPosition.clamp(widget.minX, widget.maxX);
+    });
+    widget.onPositionChanged(_xPosition); 
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentImagePath = '${widget.imagePathBase}_$_currentFrame.png';
@@ -59,10 +70,7 @@ class _DraggablePlayerHorizontalState extends State<DraggablePlayerHorizontal> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth;
-        final playerHalfWidth = widget.width / 2;
-        final minX = -maxWidth / 2 + playerHalfWidth;
-        final maxX = maxWidth / 2 - playerHalfWidth;
-
+        
         return GestureDetector(
           onPanUpdate: (details) {
             setState(() {
