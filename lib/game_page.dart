@@ -8,6 +8,7 @@ import 'widgets/draggable_player_horizontal.dart';
 import 'widgets/draggable_player_vertical.dart';
 import 'widgets/infinite_scroll_map.dart';
 import 'services/supabase_service.dart';
+import 'widgets/animated_obstacle.dart';
 
 class GamePage extends StatefulWidget {
   final String playerName;
@@ -27,6 +28,7 @@ class GamePage extends StatefulWidget {
 
 class _GamePageState extends State<GamePage> {
   final SupabaseService _supabaseService = SupabaseService();
+  double _mapScrollPosition = 0.0;
   
   // --- VARIABLES DE ESTADO ---
   bool _showTutorial = true; // NUEVO: Controla si se muestra el mensaje de inicio
@@ -65,21 +67,41 @@ class _GamePageState extends State<GamePage> {
 
   // CONFIGURACIÓN DE LÍMITES POR MAPA
   Map<String, double> get mapConfig {
-    if (widget.selectedMap == 'Parque') {
+    if (widget.selectedMap == 'Ruta 17') {
+      // RUTA 17
       return {
-        'player_min_x': -200.0, 
-        'player_max_x': 150.0, 
-        'player_min_y': -130.0,  
-        'player_max_y': 40.0,    
-        'spawn_x_range': 100.0,
-        'spawn_y_range': 45.0,
+        // Vertical
+        'player_min_x': -130.0,
+        'player_max_x': 130.0,
+        
+        // Horizontal
+        'player_min_y': -160.0,
+        'player_max_y': 160.0,  
+        
+        'spawn_x_range': 110.0,
+        'spawn_y_range': 150.0, 
       };
-    } else { // MAPA CIUDAD
+    } else if (widget.selectedMap == 'Ruta 21') {
+      // RUTA 21
+      return {
+        // Vertical
+        'player_min_x': -140.0,
+        'player_max_x': 140.0,
+        
+        // Horizontal
+        'player_min_y': -160.0, 
+        'player_max_y': 160.0,
+
+        'spawn_x_range': 120.0,
+        'spawn_y_range': 150.0,
+      };
+    } else { 
+      // CIUDAD (Default)
       return {
         'player_min_x': -250.0,
         'player_max_x': 150.0,
-        'player_min_y': -120.0, 
-        'player_max_y': 80.0,   
+        'player_min_y': -120.0,
+        'player_max_y': 80.0,
         'spawn_x_range': 140.0,
         'spawn_y_range': 100.0,
       };
@@ -96,18 +118,13 @@ class _GamePageState extends State<GamePage> {
     await _musicPlayer.setReleaseMode(ReleaseMode.loop);
     await _musicPlayer.play(AssetSource('audio/music.mp3'));
     _musicPlayer.setVolume(0.5);
-    
-    // NOTA: Ya no iniciamos el loop aquí automáticamente.
-    // Esperamos a que el usuario quite el tutorial.
   }
 
-  // --- NUEVO: Función para ocultar tutorial e iniciar el juego ---
   void _dismissTutorialAndStart() {
     if (_showTutorial) {
       setState(() {
         _showTutorial = false;
       });
-      // Iniciamos el motor del juego
       _startGameLoop();
     }
   }
@@ -123,11 +140,15 @@ class _GamePageState extends State<GamePage> {
       
       // Si el tutorial sigue activo (por seguridad), no avanzamos
       if (_showTutorial) return;
-
-      _incrementCounter();
-      _updateObstacles();
-      _checkCollisions();
-      _handleKeyboardMovement();
+      setState(() { // Asegúrate de que esto esté dentro del setState o lo llame
+        _incrementCounter();
+        _updateObstacles();
+        _checkCollisions();
+        _handleKeyboardMovement();
+        
+        // NUEVA LÍNEA: Movemos el mapa a la misma velocidad que los obstáculos
+        _mapScrollPosition += _gameSpeed; 
+      });
     });
   }
 
@@ -179,7 +200,7 @@ class _GamePageState extends State<GamePage> {
 
       _spawnTimer++;
 
-      if (_spawnTimer > 30) {
+      if (_spawnTimer > 18) {
         if (_random.nextInt(100) < 15) {
           _spawnPotion();
         } else {
@@ -191,10 +212,25 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _spawnNewObstacle() {
-    final sprite = _obstacleSprites[_random.nextInt(_obstacleSprites.length)];
     final size = MediaQuery.of(context).size;
-    final config = mapConfig;
+    final config = mapConfig; // Obtiene los límites actuales
+    
+    // LÓGICA DE SPAWN SEGÚN EL MAPA
+    if (widget.selectedMap == 'Ruta 17') {
+      _spawnBiker(); // Función especial para la ruta de bicis
+    } else if (widget.selectedMap == 'Ruta 21') {
+      _spawnSwimmer();
+    } else {
+      // Lógica estándar para otros mapas (Parque/Ciudad)
+      _spawnStandardObstacle(size, config);
+    }
+  }
 
+  // Spawn específico para Bikers en Ruta 17
+  void _spawnBiker() {
+    final config = mapConfig;
+    
+    // Configuración para Vertical
     if (_isVertical) {
       double range = config['spawn_x_range']!;
       double randomX = (_random.nextDouble() * (range * 2)) - range;
@@ -202,23 +238,97 @@ class _GamePageState extends State<GamePage> {
       _obstacles.add(
         Obstacle(
           id: DateTime.now().toString(),
-          imagePath: sprite,
+          imagePath: 'assets/enemies/biker/biker_vertical', 
           x: randomX,
-          y: -100,
+          y: -150,
+          width: 70,
+          height: 90,
+          isAnimated: true,
+          frameCount: 4,
+          animationSpeed: 120,
         ),
       );
     } else {
+      final size = MediaQuery.of(context).size;
       double range = config['spawn_y_range']!;
       double randomY = (_random.nextDouble() * (range * 2)) - range;
 
       _obstacles.add(
         Obstacle(
           id: DateTime.now().toString(),
-          imagePath: sprite,
+          imagePath: 'assets/enemies/biker/biker_horizontal', 
           x: size.width + 100,
-          y: randomY,
+          y: randomY, 
+          width: 90,
+          height: 70,
+          isAnimated: true,
+          frameCount: 3,
+          animationSpeed: 120,
         ),
       );
+    }
+  }
+
+  void _spawnSwimmer() {
+    final config = mapConfig;
+    
+    // Aleatoriamente elige 'swimmer1' o 'swimmer2'
+    // nextBool() devuelve true o false (50% probabilidad)
+    String swimmerType = _random.nextBool() ? 'swimmer1' : 'swimmer2';
+
+    // --- LÓGICA VERTICAL ---
+    if (_isVertical) {
+      double range = config['spawn_x_range']!;
+      double randomX = (_random.nextDouble() * (range * 2)) - range;
+
+      _obstacles.add(
+        Obstacle(
+          id: DateTime.now().toString(),
+          // Usamos la variable swimmerType para construir la ruta
+          imagePath: 'assets/enemies/swimmers/${swimmerType}_vertical', 
+          x: randomX,
+          y: -150,
+          width: 60,
+          height: 60,
+          isAnimated: true,
+          frameCount: 4, 
+          animationSpeed: 180,
+        ),
+      );
+    } 
+    // --- LÓGICA HORIZONTAL ---
+    else {
+      final size = MediaQuery.of(context).size;
+      double range = config['spawn_y_range']!;
+      double randomY = (_random.nextDouble() * (range * 2)) - range;
+
+      _obstacles.add(
+        Obstacle(
+          id: DateTime.now().toString(),
+          imagePath: 'assets/enemies/swimmers/${swimmerType}_horizontal', 
+          x: size.width + 100,
+          y: randomY,
+          width: 70, 
+          height: 50,
+          isAnimated: true,
+          frameCount: 3, 
+          animationSpeed: 180,
+        ),
+      );
+    }
+  }
+
+  // La lógica vieja que tenías, movida aquí para ordenar
+  void _spawnStandardObstacle(Size size, Map<String, double> config) {
+    final sprite = _obstacleSprites[_random.nextInt(_obstacleSprites.length)];
+    if (_isVertical) {
+      double range = config['spawn_x_range']!;
+      double randomX = (_random.nextDouble() * (range * 2)) - range;
+      _obstacles.add(Obstacle(id: DateTime.now().toString(), imagePath: sprite, x: randomX, y: -100));
+    } else {
+      double range = config['spawn_y_range']!;
+      double randomY = (_random.nextDouble() * (range * 2)) - range;
+      _obstacles.add(Obstacle(id: DateTime.now().toString(), imagePath: sprite, x: size.width + 100, y: randomY));
     }
   }
 
@@ -269,26 +379,38 @@ class _GamePageState extends State<GamePage> {
     final screenSize = MediaQuery.of(context).size;
     final centerX = screenSize.width / 2;
     final centerY = screenSize.height / 2;
+   
+    double pWidth;
+    double pHeight;
+
+    if (widget.selectedMap == 'Ruta 21') {
+       if (_isVertical) { pWidth = 60; pHeight = 60; }
+       else { pWidth = 70; pHeight = 50; }
+    } else {
+       pWidth = 70; pHeight = 90;
+    }
 
     Rect playerRect;
+
     if (_isVertical) {
-      // Hitbox optimizado para llantas
+      double playerVisualY = screenSize.height - 40 - (pHeight / 2);
       playerRect = Rect.fromCenter(
-        center: Offset(centerX + _playerPosition, (screenSize.height - 150) + 20),
-        width: 16, 
-        height: 16, 
+        center: Offset(centerX + _playerPosition, playerVisualY),
+        width: pWidth * 0.6,
+        height: pHeight * 0.6,
       );
     } else {
+      double playerVisualX = 40 + (pWidth / 2);
       playerRect = Rect.fromCenter(
-        center: Offset(80, centerY + _playerPosition),
-        width: 30,
-        height: 20, 
+        center: Offset(playerVisualX, centerY + _playerPosition),
+        width: pWidth * 0.6,
+        height: pHeight * 0.6,
       );
     }
 
     for (var obstacle in _obstacles) {
       Rect obstacleRect;
-      double hitBoxScale = 0.5; 
+      double hitBoxScale = 0.7;
 
       if (_isVertical) {
         obstacleRect = Rect.fromCenter(
@@ -531,6 +653,7 @@ class _GamePageState extends State<GamePage> {
       _isInvincible = false;
       _gameSpeed = 8.0;
       _playerPosition = 0.0;
+      _mapScrollPosition = 0.0;
       _showTutorial = true; // Volvemos a mostrar el tutorial al reiniciar
     });
     _musicPlayer.resume();
@@ -727,6 +850,46 @@ class _GamePageState extends State<GamePage> {
 
   Widget _buildPlayerWidget() {
     final config = mapConfig;
+    String characterName = widget.playerName;
+
+    if (characterName == 'green') characterName = 'leaf';
+
+    String baseFolder;
+    String action;
+    String suffix = _isVertical ? "vertical" : ""; 
+    int currentFrameCount = 3;
+    double pWidth;
+    double pHeight;
+
+    if (widget.selectedMap == 'Ruta 21') {
+      // Modo surf (agua)
+      baseFolder = '${characterName}swim';
+      action = 'swim';
+      currentFrameCount = 2;
+      if (!_isVertical) suffix = "horizontal";
+
+      if (_isVertical) {
+        pWidth = 60; 
+        pHeight = 60;
+      } else {
+        pWidth = 70;
+        pHeight = 50; 
+      }
+
+    } else {
+      // Modo bici
+      baseFolder = characterName;
+      action = 'bici';
+      currentFrameCount = 3;
+      if (!_isVertical) suffix = "lateral";
+      
+      // Tamaños estándar Bici
+      pWidth = 70;
+      pHeight = 90;
+    }
+
+    final String imagePathBase = 
+        'assets/pokemon/$baseFolder/${characterName}_${action}_$suffix';
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 100),
@@ -734,22 +897,20 @@ class _GamePageState extends State<GamePage> {
       child: _isVertical
           ? DraggablePlayerHorizontal(
               key: _horizontalKey,
-              imagePathBase:
-                  'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_vertical',
-              frameCount: 3,
-              width: 80,
-              height: 80,
+              imagePathBase: imagePathBase,
+              frameCount: currentFrameCount,
+              width: pWidth,
+              height: pHeight,
               onPositionChanged: (val) => _playerPosition = val,
               minX: config['player_min_x']!,
               maxX: config['player_max_x']!,
             )
           : DraggablePlayerVertical(
               key: _verticalKey,
-              imagePathBase:
-                  'assets/pokemon/${widget.playerName}/${widget.playerName}_bici_lateral',
-              frameCount: 3,
-              width: 80,
-              height: 80,
+              imagePathBase: imagePathBase,
+              frameCount: currentFrameCount,
+              width: pWidth,
+              height: pHeight,
               onPositionChanged: (val) => _playerPosition = val,
               minY: config['player_min_y']!,
               maxY: config['player_max_y']!,
@@ -759,33 +920,28 @@ class _GamePageState extends State<GamePage> {
 
   Widget _buildVerticalLayout() {
     final screenSize = MediaQuery.of(context).size;
+
     String mapImage;
-    if (widget.selectedMap == 'Parque') {
-      mapImage = 'assets/maps/mapa_parque_vertical.png';
+    if (widget.selectedMap == 'Ruta 17') {       
+       mapImage = 'assets/maps/mapa_ruta17_vertical.png'; 
+    } else if (widget.selectedMap == 'Ruta 21') {
+       mapImage = 'assets/maps/mapa_ruta21_vertical.png';
     } else {
-      mapImage = 'assets/maps/mapa_city_vertical.png';
+       mapImage = 'assets/maps/mapa_city_vertical.png'; 
     }
-    // NOTA: Podrías querer que el mapa NO se mueva si está en tutorial.
-    // Para eso, pasa duration: Duration.zero o similar, pero InfiniteScrollMap
-    // usa un controlador interno. Por ahora lo dejamos moviéndose como "fondo animado"
-    // mientras esperas, queda bonito.
+
     return InfiniteScrollMap(
       imagePath: mapImage,
       scrollDirection: Axis.vertical,
-      duration: const Duration(seconds: 10),
-      reverse: true,
+      scrollOffset: _mapScrollPosition,
+      reverse: false,
       child: Stack(
         children: [
           ..._obstacles.map(
             (obstacle) => Positioned(
               left: (screenSize.width / 2) + obstacle.x - (obstacle.width / 2),
               top: obstacle.y - (obstacle.height / 2),
-              child: Image.asset(
-                obstacle.imagePath,
-                width: obstacle.width,
-                height: obstacle.height,
-                fit: BoxFit.contain,
-              ),
+              child: AnimatedObstacle(obstacle: obstacle),
             ),
           ),
           Align(
@@ -802,29 +958,30 @@ class _GamePageState extends State<GamePage> {
 
   Widget _buildHorizontalLayout() {
     final screenSize = MediaQuery.of(context).size;
+    
+    // Selección de mapa
     String mapImage;
-    if (widget.selectedMap == 'Parque') {
-      mapImage = 'assets/maps/mapa_parque_horizontal.png';
+    if (widget.selectedMap == 'Ruta 17') {
+      mapImage = 'assets/maps/mapa_ruta17_horizontal.png';
+    } else if (widget.selectedMap == 'Ruta 21') {
+      mapImage = 'assets/maps/mapa_ruta21_horizontal.png';
     } else {
       mapImage = 'assets/maps/mapa_city_horizontal.png';
     }
+
     return InfiniteScrollMap(
       imagePath: mapImage,
       scrollDirection: Axis.horizontal,
-      duration: const Duration(seconds: 10),
-      reverse: false,
+      scrollOffset: _mapScrollPosition,
+      reverse: true,
       child: Stack(
         children: [
           ..._obstacles.map(
             (obstacle) => Positioned(
+              // Cálculo de posición horizontal
               left: obstacle.x - (obstacle.width / 2),
-              top: (screenSize.height / 2) + obstacle.y - (obstacle.height / 2),
-              child: Image.asset(
-                obstacle.imagePath,
-                width: obstacle.width,
-                height: obstacle.height,
-                fit: BoxFit.contain,
-              ),
+              top: (screenSize.height / 2) + obstacle.y - (obstacle.height / 2),          
+              child: AnimatedObstacle(obstacle: obstacle),
             ),
           ),
           Align(

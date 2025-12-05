@@ -381,7 +381,7 @@ final SupabaseService _supabaseService = SupabaseService();
                     // para seleccionar entre cuatro personajes
                     child: Image.asset(
                       _selectedPlayer == 'red' ? 'assets/players/red_player.png' :
-                      _selectedPlayer == 'green' ? 'assets/players/player_green.png' :
+                      _selectedPlayer == 'leaf' ? 'assets/players/leaf_player.png' :
                       _selectedPlayer == 'brendan' ? 'assets/players/brendan_player.png' :
                       'assets/players/may_player.png',
 

@@ -134,13 +134,13 @@ class _PlayerSelectPageState extends State<PlayerSelectPage> with TickerProvider
                                 },
                               ),
                               _PlayerCard(
-                                playerName: "GREEN",
-                                imagePath: "assets/players/player_green.png",
-                                isSelected: _selectedPlayer == 'green',
+                                playerName: "LEAF",
+                                imagePath: "assets/players/leaf_player.png",
+                                isSelected: _selectedPlayer == 'leaf',
                                 floatAnimation: _floatAnimation,
                                 onTap: () {
                                   setState(() {
-                                    _selectedPlayer = 'green';
+                                    _selectedPlayer = 'leaf';
                                   });
                                 },
                               ),

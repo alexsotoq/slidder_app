@@ -1,124 +1,78 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 
-class InfiniteScrollMap extends StatefulWidget {
+class InfiniteScrollMap extends StatelessWidget {
   final String imagePath;
   final Axis scrollDirection;
   final Widget child;
-  final Duration duration;
+  final double scrollOffset; // NUEVO: Recibimos cuánto se ha movido el mapa
   final bool reverse;
 
   const InfiniteScrollMap({
     super.key,
     required this.imagePath,
     required this.child,
+    required this.scrollOffset, // Obligatorio
     this.scrollDirection = Axis.vertical,
-    this.duration = const Duration(seconds: 20),
     this.reverse = false,
   });
-
-  @override
-  State<InfiniteScrollMap> createState() => _InfiniteScrollMapState();
-}
-
-class _InfiniteScrollMapState extends State<InfiniteScrollMap>
-    with TickerProviderStateMixin {
-      
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
-    _controller.repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            final double animationValue = _controller.value;
-            final double screenDimension = widget.scrollDirection == Axis.vertical
-                ? constraints.maxHeight
-                : constraints.maxWidth;
-                
-            final double directionMultiplier = widget.reverse ? 1.0 : -1.0;
-            final double translateValue = (animationValue * screenDimension) * directionMultiplier;
+        // Dimension de la pantalla (alto o ancho)
+        final double screenDimension = scrollDirection == Axis.vertical
+            ? constraints.maxHeight
+            : constraints.maxWidth;
 
-            double offsetA = translateValue;
-            double offsetB = widget.reverse
-                ? translateValue - screenDimension
-                : translateValue + screenDimension;
-            
-            offsetA = _normalizeOffset(offsetA, screenDimension);
-            offsetB = _normalizeOffset(offsetB, screenDimension);
+        // Calculamos el desplazamiento relativo al tamaño de la pantalla
+        // Usamos el módulo (%) para crear el efecto de bucle infinito
+        double relativeOffset = scrollOffset % screenDimension;
+        
+        // Si queremos ir en reversa (para que el suelo baje o vaya a la izquierda)
+        if (reverse) {
+          relativeOffset = screenDimension - relativeOffset;
+        }
 
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                _buildMapImage(offsetA, constraints),
-                _buildMapImage(offsetB, constraints),
-                widget.child,
-              ],
-            );
-          },
+        // Posición de la primera imagen
+        double offsetA = relativeOffset;
+        if (offsetA > 0) offsetA -= screenDimension;
+
+        // Posición de la segunda imagen (la que viene detrás)
+        double offsetB = offsetA + screenDimension;
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildMapImage(offsetA, constraints),
+            _buildMapImage(offsetB, constraints),
+            child, // Los obstáculos y el jugador van encima
+          ],
         );
       },
     );
   }
 
-  double _normalizeOffset(double offset, double screenDimension) {
-    if (widget.reverse) {
-      if (offset >= screenDimension) {
-        return offset - (2 * screenDimension);
-      }
-    } else {
-      if (offset <= -screenDimension) {
-        return offset + (2 * screenDimension);
-      }
-    }
-    return offset;
-  }
-
   Widget _buildMapImage(double offset, BoxConstraints constraints) {
-    final bool isVertical = widget.scrollDirection == Axis.vertical;
+    final bool isVertical = scrollDirection == Axis.vertical;
     BoxFit fit;
-    const ImageRepeat repeat = ImageRepeat.noRepeat; 
-    double? width, height;
-
+    
+    // Ajuste para que la imagen cubra bien
     if (isVertical) {
-      fit = BoxFit.fitWidth; 
-      width = constraints.maxWidth;
-      height = null;
+      fit = BoxFit.cover; 
     } else {
-      fit = BoxFit.fitHeight;
-      height = constraints.maxHeight;
-      width = null;
+      fit = BoxFit.cover;
     }
 
-    return Transform.translate(
-      offset: isVertical
-          ? Offset(0, offset)
-          : Offset(offset, 0),
+    return Positioned(
+      top: isVertical ? offset : 0,
+      left: isVertical ? 0 : offset,
+      width: constraints.maxWidth,
+      height: constraints.maxHeight,
       child: Image.asset(
-        widget.imagePath,
-        width: width,
-        height: height,
+        imagePath,
         fit: fit,
-        repeat: repeat, 
-        gaplessPlayback: true,
+        gaplessPlayback: true, // Evita parpadeos
       ),
     );
   }

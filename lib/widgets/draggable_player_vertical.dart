@@ -36,6 +36,7 @@ class DraggablePlayerVerticalState extends State<DraggablePlayerVertical> {
   @override
   void initState() {
     super.initState();
+    _yPosition = (widget.minY + widget.maxY) / 2;
     _startAnimation();
   }
 

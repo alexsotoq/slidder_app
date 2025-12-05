@@ -40,9 +40,13 @@ flutter:
     - assets/items/
     - assets/pokemon/
     - assets/pokemon/red/
-    - assets/pokemon/green/
+    - assets/pokemon/leaf/
     - assets/audio/
     - assets/fonts/
     - assets/seamless-pokeball-pattern-vector-11290309.png
     - assets/pokemon/brendan/
     - assets/pokemon/may/
+    - assets/enemies/biker/
+    - assets/enemies/swimmers/
+    - assets/pokemon/leafswim/
+    - assets/pokemon/redswim/

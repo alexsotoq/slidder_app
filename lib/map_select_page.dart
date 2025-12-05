@@ -15,7 +15,8 @@ class MapSelectPage extends StatefulWidget {
   State<MapSelectPage> createState() => _MapSelectPageState();
 }
 
-class _MapSelectPageState extends State<MapSelectPage> with TickerProviderStateMixin {
+class _MapSelectPageState extends State<MapSelectPage>
+    with TickerProviderStateMixin {
   late String _selectedMap;
   late AnimationController _floatController;
   late Animation<double> _floatAnimation;
@@ -98,10 +99,16 @@ class _MapSelectPageState extends State<MapSelectPage> with TickerProviderStateM
                           const SizedBox(height: 8),
 
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF81C784),
-                              border: Border.all(color: const Color(0xFF519657), width: 3),
+                              border: Border.all(
+                                color: const Color(0xFF519657),
+                                width: 3,
+                              ),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: const Text(
@@ -120,21 +127,37 @@ class _MapSelectPageState extends State<MapSelectPage> with TickerProviderStateM
                           // Mapas en columna para acomodar las imágenes horizontales
                           Column(
                             children: [
+                              const SizedBox(height: 24),
                               _MapCard(
-                                mapName: "PARQUE",
-                                imagePath: "assets/maps/mapa_parque_horizontal.png",
-                                isSelected: _selectedMap == 'Parque',
+                                mapName: "RUTA 17",
+                                imagePath:
+                                    "assets/maps/mapa_ruta17_horizontal.png",
+                                isSelected: _selectedMap == 'Ruta 17',
                                 floatAnimation: _floatAnimation,
                                 onTap: () {
                                   setState(() {
-                                    _selectedMap = 'Parque';
+                                    _selectedMap = 'Ruta 17';
                                   });
                                 },
                               ),
                               const SizedBox(height: 24),
                               _MapCard(
+                                mapName: "RUTA 21",
+                                imagePath:
+                                    "assets/maps/mapa_ruta21_horizontal.png",
+                                isSelected: _selectedMap == 'Ruta 21',
+                                floatAnimation: _floatAnimation,
+                                onTap: () {
+                                  setState(() {
+                                    _selectedMap = 'Ruta 21';
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 24),                           
+                              _MapCard(
                                 mapName: "CIUDAD",
-                                imagePath: "assets/maps/mapa_city_horizontal.png",
+                                imagePath:
+                                    "assets/maps/mapa_city_horizontal.png",
                                 isSelected: _selectedMap == 'Ciudad',
                                 floatAnimation: _floatAnimation,
                                 onTap: () {
@@ -142,17 +165,17 @@ class _MapSelectPageState extends State<MapSelectPage> with TickerProviderStateM
                                     _selectedMap = 'Ciudad';
                                   });
                                 },
-                              ),
+                              ),                              
                             ],
                           ),
 
                           const SizedBox(height: 40),
-
                           _PixelButton(
                             text: "CONFIRMAR",
                             color: const Color(0xFF81C784),
                             darkColor: const Color(0xFF519657),
-                            onPressed: () => Navigator.pop(context, _selectedMap),
+                            onPressed: () =>
+                                Navigator.pop(context, _selectedMap),
                           ),
                         ],
                       ),
@@ -204,13 +227,19 @@ class _MapCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF8E1),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF81C784) : const Color(0xFFB7B7BD),
+                  color: isSelected
+                      ? const Color(0xFF81C784)
+                      : const Color(0xFFB7B7BD),
                   width: isSelected ? 6 : 4,
                 ),
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: (isSelected ? const Color(0xFF519657) : const Color(0xFF818185)).withOpacity(0.3),
+                    color:
+                        (isSelected
+                                ? const Color(0xFF519657)
+                                : const Color(0xFF818185))
+                            .withOpacity(0.3),
                     blurRadius: isSelected ? 15 : 10,
                     spreadRadius: isSelected ? 3 : 2,
                   ),
@@ -254,7 +283,10 @@ class _MapCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: const Color(0xFF81C784),
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: const Color(0xFF519657), width: 2),
+                          border: Border.all(
+                            color: const Color(0xFF519657),
+                            width: 2,
+                          ),
                         ),
                         child: const Icon(
                           Icons.check,
@@ -273,10 +305,14 @@ class _MapCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF81C784) : const Color(0xFFB7B7BD),
+                color: isSelected
+                    ? const Color(0xFF81C784)
+                    : const Color(0xFFB7B7BD),
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF519657) : const Color(0xFF818185),
+                  color: isSelected
+                      ? const Color(0xFF519657)
+                      : const Color(0xFF818185),
                   width: 2,
                 ),
               ),
@@ -288,10 +324,7 @@ class _MapCard extends StatelessWidget {
                   color: Colors.white,
                   height: 1,
                   shadows: [
-                    Shadow(
-                      color: Colors.black45,
-                      offset: Offset(1, 1),
-                    ),
+                    Shadow(color: Colors.black45, offset: Offset(1, 1)),
                   ],
                 ),
               ),
@@ -364,13 +397,22 @@ class _BackButtonState extends State<_BackButton> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   margin: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(5),
                     border: Border(
-                      top: BorderSide(color: Colors.white.withOpacity(0.5), width: 1.5),
-                      left: BorderSide(color: Colors.white.withOpacity(0.5), width: 1.5),
+                      top: BorderSide(
+                        color: Colors.white.withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                      left: BorderSide(
+                        color: Colors.white.withOpacity(0.5),
+                        width: 1.5,
+                      ),
                     ),
                   ),
                   child: Row(
@@ -384,10 +426,7 @@ class _BackButtonState extends State<_BackButton> {
                           color: Colors.white,
                           height: 1,
                           shadows: [
-                            Shadow(
-                              color: Colors.black45,
-                              offset: Offset(1, 1),
-                            ),
+                            Shadow(color: Colors.black45, offset: Offset(1, 1)),
                           ],
                         ),
                       ),
@@ -457,12 +496,12 @@ class _PixelButtonState extends State<_PixelButton> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: _isHovered && !_isPressed
                       ? [
-                    BoxShadow(
-                      color: widget.color.withOpacity(0.4),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    )
-                  ]
+                          BoxShadow(
+                            color: widget.color.withOpacity(0.4),
+                            blurRadius: 10,
+                            spreadRadius: 2,
+                          ),
+                        ]
                       : [],
                 ),
                 child: Container(
@@ -470,8 +509,14 @@ class _PixelButtonState extends State<_PixelButton> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
                     border: Border(
-                      top: BorderSide(color: Colors.white.withOpacity(0.5), width: 1.5),
-                      left: BorderSide(color: Colors.white.withOpacity(0.5), width: 1.5),
+                      top: BorderSide(
+                        color: Colors.white.withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                      left: BorderSide(
+                        color: Colors.white.withOpacity(0.5),
+                        width: 1.5,
+                      ),
                     ),
                   ),
                   child: Center(
@@ -483,10 +528,7 @@ class _PixelButtonState extends State<_PixelButton> {
                         color: Colors.white,
                         height: 1,
                         shadows: [
-                          Shadow(
-                            color: Colors.black45,
-                            offset: Offset(1, 1),
-                          ),
+                          Shadow(color: Colors.black45, offset: Offset(1, 1)),
                         ],
                       ),
                     ),

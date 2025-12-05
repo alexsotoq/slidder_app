@@ -35,6 +35,7 @@ class DraggablePlayerHorizontalState extends State<DraggablePlayerHorizontal> {
   @override
   void initState() {
     super.initState();
+    _xPosition = (widget.minX + widget.maxX) / 2;
     _startAnimation();
   }
 
